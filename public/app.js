@@ -30,40 +30,52 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 let recognition = null;
 let listening = false;
 
-if (SpeechRecognition) {
+if (!SpeechRecognition) {
+  micBtn.disabled = true;
+  micBtn.title = 'Voice input is not supported in this browser';
+}
+
+function startListening() {
+  // A fresh instance per session avoids some mobile browsers getting stuck
+  // in "listening" forever when a recognizer is restarted.
   recognition = new SpeechRecognition();
   recognition.lang = 'de-DE';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  recognition.addEventListener('start', () => {
-    listening = true;
-    micBtn.textContent = '🎤 Listening…';
-    clearError();
-  });
+  recognition.continuous = true;
+  recognition.interimResults = true;
 
   recognition.addEventListener('result', (event) => {
-    input.value = event.results[0][0].transcript;
+    let transcript = '';
+    for (let i = 0; i < event.results.length; i++) {
+      transcript += event.results[i][0].transcript;
+    }
+    input.value = transcript;
   });
 
   recognition.addEventListener('error', (event) => {
-    if (event.error === 'no-speech') return;
+    if (event.error === 'no-speech' || event.error === 'aborted') return;
     showError(`Voice input failed: ${event.error}`);
   });
 
   recognition.addEventListener('end', () => {
     listening = false;
     micBtn.textContent = '🎤 Dictate';
+    micBtn.classList.remove('listening');
   });
-} else {
-  micBtn.disabled = true;
-  micBtn.title = 'Voice input is not supported in this browser';
+
+  clearError();
+  recognition.start();
+  listening = true;
+  micBtn.textContent = '⏹ Stop listening';
+  micBtn.classList.add('listening');
 }
 
 micBtn.addEventListener('click', () => {
-  if (!recognition || listening) return;
-  clearError();
-  recognition.start();
+  if (!SpeechRecognition) return;
+  if (listening) {
+    recognition.stop();
+  } else {
+    startListening();
+  }
 });
 
 translateBtn.addEventListener('click', async () => {
