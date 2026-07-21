@@ -1,0 +1,101 @@
+const input = document.getElementById('input');
+const speakBtn = document.getElementById('speakBtn');
+const translateBtn = document.getElementById('translateBtn');
+const result = document.getElementById('result');
+const translationText = document.getElementById('translationText');
+const speakTranslationBtn = document.getElementById('speakTranslationBtn');
+const saveBtn = document.getElementById('saveBtn');
+const errorEl = document.getElementById('error');
+const wordList = document.getElementById('wordList');
+const emptyMessage = document.getElementById('emptyMessage');
+const exportBtn = document.getElementById('exportBtn');
+
+let currentTranslation = '';
+
+function showError(message) {
+  errorEl.textContent = message;
+  errorEl.classList.remove('hidden');
+}
+
+function clearError() {
+  errorEl.classList.add('hidden');
+  errorEl.textContent = '';
+}
+
+speakBtn.addEventListener('click', () => speak(input.value.trim(), 'de-DE'));
+speakTranslationBtn.addEventListener('click', () => speak(currentTranslation, 'en-US'));
+
+translateBtn.addEventListener('click', async () => {
+  const text = input.value.trim();
+  clearError();
+  if (!text) {
+    showError('Type a German word or sentence first.');
+    return;
+  }
+
+  translateBtn.disabled = true;
+  translateBtn.textContent = 'Translating…';
+  try {
+    const res = await fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Translation failed');
+
+    currentTranslation = data.translation;
+    translationText.textContent = data.translation;
+    result.classList.remove('hidden');
+  } catch (err) {
+    showError(err.message);
+    result.classList.add('hidden');
+  } finally {
+    translateBtn.disabled = false;
+    translateBtn.textContent = 'Translate';
+  }
+});
+
+saveBtn.addEventListener('click', async () => {
+  const original = input.value.trim();
+  if (!original || !currentTranslation) return;
+
+  try {
+    const res = await fetch('/api/words', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ original, translation: currentTranslation }),
+    });
+    if (!res.ok) throw new Error('Could not save entry');
+
+    input.value = '';
+    result.classList.add('hidden');
+    currentTranslation = '';
+    await loadWords();
+  } catch (err) {
+    showError(err.message);
+  }
+});
+
+function renderWords(words) {
+  wordList.innerHTML = '';
+  emptyMessage.classList.toggle('hidden', words.length > 0);
+  for (const word of words) {
+    wordList.appendChild(createWordListItem(word, loadWords));
+  }
+}
+
+async function loadWords() {
+  const res = await fetch('/api/words');
+  const words = await res.json();
+  const todaysWords = words.filter((w) => wordDateKey(w) === todayKey());
+  renderWords(todaysWords);
+  return todaysWords;
+}
+
+exportBtn.addEventListener('click', async () => {
+  const words = await loadWords();
+  downloadCsv(wordsToCsv(words), `german-vocab-${todayKey()}.csv`);
+});
+
+loadWords();

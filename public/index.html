@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>German Vocab Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <nav class="top-nav">
+      <h1>German Vocab Helper</h1>
+      <a href="lists.html">📚 All Lists</a>
+    </nav>
+    <p class="subtitle">Type a word or sentence you don't know, hear it, translate it, and save it for later.</p>
+
+    <section class="lookup">
+      <textarea id="input" placeholder="e.g. Sehnsucht, or a whole sentence…" rows="3"></textarea>
+      <div class="buttons">
+        <button id="speakBtn" title="Read the German text aloud">🔊 Speak</button>
+        <button id="translateBtn">Translate</button>
+      </div>
+
+      <div id="result" class="result hidden">
+        <p id="translationText"></p>
+        <div class="buttons">
+          <button id="speakTranslationBtn" title="Read the English translation aloud">🔊 Speak translation</button>
+          <button id="saveBtn">💾 Save to list</button>
+        </div>
+      </div>
+      <p id="error" class="error hidden"></p>
+    </section>
+
+    <section class="vocab-list">
+      <div class="list-header">
+        <h2>Today's list</h2>
+        <button id="exportBtn">Export today as CSV</button>
+      </div>
+      <ul id="wordList"></ul>
+      <p id="emptyMessage" class="empty hidden">Nothing saved today yet.</p>
+    </section>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

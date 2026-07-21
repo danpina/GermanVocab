@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: german-vocab-helper
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DEEPL_API_URL
+        value: https://api-free.deepl.com/v2/translate
+      - key: DEEPL_API_KEY
+        sync: false
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false

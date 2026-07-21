@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>All Lists — German Vocab Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <nav class="top-nav">
+      <h1>All Lists</h1>
+      <a href="index.html">← Back to today</a>
+    </nav>
+    <p class="subtitle">Everything you've saved, grouped by the day you saved it.</p>
+
+    <div class="list-header">
+      <span id="totalCount" class="muted"></span>
+      <button id="exportAllBtn">Export all as CSV</button>
+    </div>
+
+    <div id="lists"></div>
+    <p id="emptyMessage" class="empty hidden">Nothing saved yet. Go look up some words!</p>
+  </main>
+
+  <script src="common.js"></script>
+  <script src="lists.js"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f7f5f2;
+  --panel: #ffffff;
+  --text: #24211d;
+  --muted: #6b665f;
+  --accent: #a4402a;
+  --accent-hover: #832f1d;
+  --border: #e2ddd5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1a17;
+    --panel: #262320;
+    --text: #f2ede6;
+    --muted: #a89f93;
+    --accent: #e08a5f;
+    --accent-hover: #f0a377;
+    --border: #3a352f;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+h1 { margin-bottom: 0.25rem; }
+.subtitle { color: var(--muted); margin-top: 0; margin-bottom: 1.5rem; }
+
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.top-nav h1 { margin: 0; }
+
+.top-nav a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.top-nav a:hover { text-decoration: underline; }
+
+.muted { color: var(--muted); font-size: 0.9rem; }
+
+.lookup, .vocab-list {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+textarea {
+  width: 100%;
+  font-size: 1rem;
+  font-family: inherit;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+button {
+  font-size: 0.95rem;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+button:hover { border-color: var(--accent); }
+
+#translateBtn, #saveBtn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+#translateBtn:hover, #saveBtn:hover { background: var(--accent-hover); }
+
+.result {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+#translationText { font-size: 1.15rem; margin: 0 0 0.25rem; }
+
+.error { color: #c0392b; }
+
+.hidden { display: none; }
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.list-header h2 { margin: 0; font-size: 1.1rem; }
+
+#wordList, .day-word-list { list-style: none; padding: 0; margin: 0; }
+
+#wordList li, .day-word-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+#wordList li:last-child, .day-word-list li:last-child { border-bottom: none; }
+
+.entry-text .original { font-weight: 600; }
+.entry-text .translation { color: var(--muted); margin: 0.15rem 0 0; }
+
+.entry-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+.entry-actions button { padding: 0.35rem 0.6rem; font-size: 0.85rem; }
+
+.empty { color: var(--muted); }
+
+#lists details {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+#lists summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: revert;
+}
+
+#lists summary::marker { color: var(--accent); }
+
+.day-body { margin-top: 0.75rem; }
+
+.day-export-btn {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.7rem;
+}
