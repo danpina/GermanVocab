@@ -1,4 +1,5 @@
 const input = document.getElementById('input');
+const micBtn = document.getElementById('micBtn');
 const speakBtn = document.getElementById('speakBtn');
 const translateBtn = document.getElementById('translateBtn');
 const result = document.getElementById('result');
@@ -24,6 +25,46 @@ function clearError() {
 
 speakBtn.addEventListener('click', () => speak(input.value.trim(), 'de-DE'));
 speakTranslationBtn.addEventListener('click', () => speak(currentTranslation, 'en-US'));
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let listening = false;
+
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.lang = 'de-DE';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.addEventListener('start', () => {
+    listening = true;
+    micBtn.textContent = '🎤 Listening…';
+    clearError();
+  });
+
+  recognition.addEventListener('result', (event) => {
+    input.value = event.results[0][0].transcript;
+  });
+
+  recognition.addEventListener('error', (event) => {
+    if (event.error === 'no-speech') return;
+    showError(`Voice input failed: ${event.error}`);
+  });
+
+  recognition.addEventListener('end', () => {
+    listening = false;
+    micBtn.textContent = '🎤 Dictate';
+  });
+} else {
+  micBtn.disabled = true;
+  micBtn.title = 'Voice input is not supported in this browser';
+}
+
+micBtn.addEventListener('click', () => {
+  if (!recognition || listening) return;
+  clearError();
+  recognition.start();
+});
 
 translateBtn.addEventListener('click', async () => {
   const text = input.value.trim();
