@@ -53,6 +53,14 @@ async function init() {
   if (!(await columnExists('words', 'user_id'))) {
     await client.execute('ALTER TABLE words ADD COLUMN user_id TEXT');
   }
+  // Each word remembers the language pair it was saved under, so switching your
+  // own language settings later doesn't change how older saved words are read aloud.
+  if (!(await columnExists('words', 'input_lang'))) {
+    await client.execute("ALTER TABLE words ADD COLUMN input_lang TEXT NOT NULL DEFAULT 'DE'");
+  }
+  if (!(await columnExists('words', 'output_lang'))) {
+    await client.execute("ALTER TABLE words ADD COLUMN output_lang TEXT NOT NULL DEFAULT 'EN'");
+  }
 
   await client.execute(`
     CREATE TABLE IF NOT EXISTS word_stats (

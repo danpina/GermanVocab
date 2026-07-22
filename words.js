@@ -7,6 +7,8 @@ function rowToWord(row) {
     translation: row.translation,
     date: row.date,
     createdAt: row.created_at,
+    inputLang: row.input_lang,
+    outputLang: row.output_lang,
   };
 }
 
@@ -18,13 +20,14 @@ export async function getAllWords(userId) {
   return result.rows.map(rowToWord);
 }
 
-export async function addWord(userId, { original, translation, date, createdAt }) {
+export async function addWord(userId, { original, translation, date, createdAt, inputLang, outputLang }) {
   const id = newId();
   await client.execute({
-    sql: 'INSERT INTO words (id, user_id, original, translation, date, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    args: [id, userId, original, translation, date, createdAt],
+    sql: `INSERT INTO words (id, user_id, original, translation, date, created_at, input_lang, output_lang)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [id, userId, original, translation, date, createdAt, inputLang, outputLang],
   });
-  return { id, original, translation, date, createdAt };
+  return { id, original, translation, date, createdAt, inputLang, outputLang };
 }
 
 export async function deleteWord(userId, id) {

@@ -10,8 +10,9 @@ import {
   requireAuthApi,
   requireAuthPage,
 } from './auth.js';
-import { getUserByEmail } from './users.js';
+import { getUserByEmail, updateUser } from './users.js';
 import { getAllWords, addWord, deleteWord } from './words.js';
+import { LANGUAGES, getLanguage } from './languages.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -40,6 +41,7 @@ app.get('/login.html', (req, res) => sendPage(res, 'login.html'));
 app.get('/', requireAuthPage, (req, res) => sendPage(res, 'index.html'));
 app.get('/index.html', requireAuthPage, (req, res) => sendPage(res, 'index.html'));
 app.get('/lists.html', requireAuthPage, (req, res) => sendPage(res, 'lists.html'));
+app.get('/settings.html', requireAuthPage, (req, res) => sendPage(res, 'settings.html'));
 
 // --- Auth API ---
 app.post('/api/login', async (req, res) => {
@@ -69,6 +71,25 @@ app.get('/api/me', requireAuthApi, (req, res) => {
   });
 });
 
+app.patch('/api/me', requireAuthApi, async (req, res) => {
+  const { inputLang, outputLang } = req.body;
+  const validCodes = LANGUAGES.map((l) => l.code);
+  if (inputLang && !validCodes.includes(inputLang)) {
+    return res.status(400).json({ error: `Unknown language code: ${inputLang}` });
+  }
+  if (outputLang && !validCodes.includes(outputLang)) {
+    return res.status(400).json({ error: `Unknown language code: ${outputLang}` });
+  }
+
+  const updated = await updateUser(req.user.id, { inputLang, outputLang });
+  res.json({
+    email: updated.email,
+    isAdmin: updated.isAdmin,
+    inputLang: updated.inputLang,
+    outputLang: updated.outputLang,
+  });
+});
+
 // --- Translate ---
 app.post('/api/translate', requireAuthApi, async (req, res) => {
   const text = (req.body.text || '').trim();
@@ -81,10 +102,13 @@ app.post('/api/translate', requireAuthApi, async (req, res) => {
   }
 
   try {
+    const source = getLanguage(req.user.inputLang);
+    const target = getLanguage(req.user.outputLang);
+
     const params = new URLSearchParams();
     params.set('text', text);
-    params.set('source_lang', 'DE');
-    params.set('target_lang', 'EN-US');
+    params.set('source_lang', source.deeplSource);
+    params.set('target_lang', target.deeplTarget);
 
     const response = await fetch(process.env.DEEPL_API_URL, {
       method: 'POST',
@@ -125,6 +149,8 @@ app.post('/api/words', requireAuthApi, async (req, res) => {
     translation,
     date: todayKey(),
     createdAt: new Date().toISOString(),
+    inputLang: req.user.inputLang,
+    outputLang: req.user.outputLang,
   });
   res.status(201).json(entry);
 });

@@ -12,6 +12,8 @@ const emptyMessage = document.getElementById('emptyMessage');
 const exportBtn = document.getElementById('exportBtn');
 
 let currentTranslation = '';
+let inputLocale = 'de-DE';
+let outputLocale = 'en-US';
 
 function showError(message) {
   errorEl.textContent = message;
@@ -23,8 +25,8 @@ function clearError() {
   errorEl.textContent = '';
 }
 
-speakBtn.addEventListener('click', () => speak(input.value.trim(), 'de-DE'));
-speakTranslationBtn.addEventListener('click', () => speak(currentTranslation, 'en-US'));
+speakBtn.addEventListener('click', () => speak(input.value.trim(), inputLocale));
+speakTranslationBtn.addEventListener('click', () => speak(currentTranslation, outputLocale));
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
@@ -39,7 +41,7 @@ function startListening() {
   // A fresh instance per session avoids some mobile browsers getting stuck
   // in "listening" forever when a recognizer is restarted.
   recognition = new SpeechRecognition();
-  recognition.lang = 'de-DE';
+  recognition.lang = inputLocale;
   recognition.continuous = true;
   recognition.interimResults = true;
 
@@ -82,7 +84,7 @@ translateBtn.addEventListener('click', async () => {
   const text = input.value.trim();
   clearError();
   if (!text) {
-    showError('Type a German word or sentence first.');
+    showError('Type a word or sentence first.');
     return;
   }
 
@@ -151,5 +153,13 @@ exportBtn.addEventListener('click', async () => {
   downloadCsv(wordsToCsv(words), `german-vocab-${todayKey()}.csv`);
 });
 
-renderUserBar('userBar');
-loadWords();
+async function init() {
+  const user = await renderUserBar('userBar');
+  if (user) {
+    inputLocale = getLanguage(user.inputLang).speechLocale;
+    outputLocale = getLanguage(user.outputLang).speechLocale;
+  }
+  await loadWords();
+}
+
+init();

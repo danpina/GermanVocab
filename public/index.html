@@ -12,6 +12,7 @@
       <h1>German Vocab Helper</h1>
       <div class="nav-links">
         <a href="lists.html">📚 All Lists</a>
+        <a href="settings.html">⚙️ Settings</a>
         <span id="userBar" class="user-bar"></span>
       </div>
     </nav>
@@ -20,15 +21,15 @@
     <section class="lookup">
       <textarea id="input" placeholder="e.g. Sehnsucht, or a whole sentence…" rows="3"></textarea>
       <div class="buttons">
-        <button id="micBtn" title="Dictate in German instead of typing">🎤 Dictate</button>
-        <button id="speakBtn" title="Read the German text aloud">🔊 Hear it</button>
+        <button id="micBtn" title="Dictate instead of typing">🎤 Dictate</button>
+        <button id="speakBtn" title="Read the text aloud">🔊 Hear it</button>
         <button id="translateBtn">Translate</button>
       </div>
 
       <div id="result" class="result hidden">
         <p id="translationText"></p>
         <div class="buttons">
-          <button id="speakTranslationBtn" title="Read the English translation aloud">🔊 Speak translation</button>
+          <button id="speakTranslationBtn" title="Read the translation aloud">🔊 Speak translation</button>
           <button id="saveBtn">💾 Save to list</button>
         </div>
       </div>
@@ -45,6 +46,7 @@
     </section>
   </main>
 
+  <script src="languages.js"></script>
   <script src="common.js"></script>
   <script src="app.js"></script>
 </body>

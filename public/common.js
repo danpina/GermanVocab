@@ -87,7 +87,7 @@ function createWordListItem(word, onDeleted) {
   const speakBtn = document.createElement('button');
   speakBtn.textContent = '🔊';
   speakBtn.title = 'Read aloud';
-  speakBtn.addEventListener('click', () => speak(word.original, 'de-DE'));
+  speakBtn.addEventListener('click', () => speak(word.original, getLanguage(word.inputLang).speechLocale));
 
   const deleteBtn = document.createElement('button');
   deleteBtn.textContent = '🗑';
@@ -103,7 +103,7 @@ function createWordListItem(word, onDeleted) {
 }
 
 function wordsToCsv(words) {
-  const rows = [['German', 'English', 'Saved at'], ...words.map((w) => [w.original, w.translation, w.createdAt])];
+  const rows = [['Original', 'Translation', 'Saved at'], ...words.map((w) => [w.original, w.translation, w.createdAt])];
   return rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
 }
 
