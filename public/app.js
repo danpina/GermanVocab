@@ -158,6 +158,10 @@ async function init() {
   if (user) {
     inputLocale = getLanguage(user.inputLang).speechLocale;
     outputLocale = getLanguage(user.outputLang).speechLocale;
+
+    const learningLabel = getLanguage(user.inputLang).label;
+    document.getElementById('appTitle').textContent = `${learningLabel} Vocab Helper`;
+    document.title = `${learningLabel} Vocab Helper`;
   }
   await loadWords();
 }

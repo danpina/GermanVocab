@@ -20,7 +20,11 @@ async function renderUserBar(containerId) {
   gamesLink.href = 'games.html';
   gamesLink.textContent = '🎮 Games';
 
-  const links = [gamesLink];
+  const statsLink = document.createElement('a');
+  statsLink.href = 'stats.html';
+  statsLink.textContent = '📊 Stats';
+
+  const links = [gamesLink, statsLink];
 
   if (user.isAdmin) {
     const adminLink = document.createElement('a');

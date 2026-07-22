@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stats — Vocab Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wide-main">
+    <nav class="top-nav">
+      <h1>Stats</h1>
+      <div class="nav-links">
+        <a href="index.html">← Back to today</a>
+        <span id="userBar" class="user-bar"></span>
+      </div>
+    </nav>
+    <p class="subtitle">Words you've practiced in Games, worst first — so you know what to focus on.</p>
+
+    <div class="list-header">
+      <span id="totalCount" class="muted"></span>
+      <button id="resetBtn">Reset stats</button>
+    </div>
+
+    <section class="vocab-list">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Word</th>
+            <th>Translation</th>
+            <th>Correct</th>
+            <th>Incorrect</th>
+            <th>Accuracy</th>
+          </tr>
+        </thead>
+        <tbody id="statsRows"></tbody>
+      </table>
+      <p id="emptyMessage" class="empty hidden">
+        No game data yet — play a few rounds in 🎮 Games and your results will show up here.
+      </p>
+    </section>
+  </main>
+
+  <script src="languages.js"></script>
+  <script src="common.js"></script>
+  <script src="stats.js"></script>
+</body>
+</html>

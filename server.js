@@ -17,6 +17,7 @@ import { getUserByEmail, getAllUsers, createUser, updateUser, deleteUser } from 
 import { getAllWords, addWord, deleteWord } from './words.js';
 import { LANGUAGES, getLanguage } from './languages.js';
 import { getGameWords, recordGameResult } from './games.js';
+import { getWordStats, resetWordStats } from './stats.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -50,6 +51,7 @@ app.get('/index.html', requireAuthPage, (req, res) => sendPage(res, 'index.html'
 app.get('/lists.html', requireAuthPage, (req, res) => sendPage(res, 'lists.html'));
 app.get('/settings.html', requireAuthPage, (req, res) => sendPage(res, 'settings.html'));
 app.get('/games.html', requireAuthPage, (req, res) => sendPage(res, 'games.html'));
+app.get('/stats.html', requireAuthPage, (req, res) => sendPage(res, 'stats.html'));
 app.get('/admin.html', requireAdminPage, (req, res) => sendPage(res, 'admin.html'));
 
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
@@ -186,6 +188,17 @@ app.post('/api/game/result', requireAuthApi, async (req, res) => {
     return res.status(400).json({ error: 'wordId and correct (boolean) are required' });
   }
   await recordGameResult(req.user.id, wordId, correct);
+  res.status(204).end();
+});
+
+// --- Stats ---
+app.get('/api/stats', requireAuthApi, async (req, res) => {
+  const stats = await getWordStats(req.user.id);
+  res.json(stats);
+});
+
+app.delete('/api/stats', requireAuthApi, async (req, res) => {
+  await resetWordStats(req.user.id);
   res.status(204).end();
 });
 
