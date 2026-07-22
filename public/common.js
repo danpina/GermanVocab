@@ -1,3 +1,37 @@
+async function authedFetch(url, options) {
+  const res = await fetch(url, options);
+  if (res.status === 401) {
+    window.location.href = '/login.html';
+    return new Promise(() => {}); // navigating away; halt the caller
+  }
+  return res;
+}
+
+async function renderUserBar(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return null;
+
+  const res = await authedFetch('/api/me');
+  const user = await res.json();
+
+  container.innerHTML = '';
+  const emailSpan = document.createElement('span');
+  emailSpan.className = 'muted';
+  emailSpan.textContent = user.email;
+
+  const logoutLink = document.createElement('a');
+  logoutLink.href = '#';
+  logoutLink.textContent = 'Logout';
+  logoutLink.addEventListener('click', async (event) => {
+    event.preventDefault();
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/login.html';
+  });
+
+  container.append(emailSpan, logoutLink);
+  return user;
+}
+
 function speak(text, lang) {
   if (!text) return;
   if (!('speechSynthesis' in window)) {
@@ -59,7 +93,7 @@ function createWordListItem(word, onDeleted) {
   deleteBtn.textContent = '🗑';
   deleteBtn.title = 'Delete';
   deleteBtn.addEventListener('click', async () => {
-    await fetch(`/api/words/${word.id}`, { method: 'DELETE' });
+    await authedFetch(`/api/words/${word.id}`, { method: 'DELETE' });
     onDeleted();
   });
 

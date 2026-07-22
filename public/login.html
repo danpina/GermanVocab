@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Log in — German Vocab Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="auth-main">
+    <h1>German Vocab Helper</h1>
+    <p class="subtitle">Log in to see your saved words.</p>
+
+    <form id="loginForm" class="lookup auth-form">
+      <label for="email">Email or user ID</label>
+      <input type="text" id="email" name="email" autocomplete="username" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required />
+
+      <button id="loginBtn" type="submit">Log in</button>
+      <p id="error" class="error hidden"></p>
+    </form>
+  </main>
+
+  <script src="login.js"></script>
+</body>
+</html>

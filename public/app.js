@@ -89,7 +89,7 @@ translateBtn.addEventListener('click', async () => {
   translateBtn.disabled = true;
   translateBtn.textContent = 'Translating…';
   try {
-    const res = await fetch('/api/translate', {
+    const res = await authedFetch('/api/translate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
@@ -114,7 +114,7 @@ saveBtn.addEventListener('click', async () => {
   if (!original || !currentTranslation) return;
 
   try {
-    const res = await fetch('/api/words', {
+    const res = await authedFetch('/api/words', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ original, translation: currentTranslation }),
@@ -139,7 +139,7 @@ function renderWords(words) {
 }
 
 async function loadWords() {
-  const res = await fetch('/api/words');
+  const res = await authedFetch('/api/words');
   const words = await res.json();
   const todaysWords = words.filter((w) => wordDateKey(w) === todayKey());
   renderWords(todaysWords);
@@ -151,4 +151,5 @@ exportBtn.addEventListener('click', async () => {
   downloadCsv(wordsToCsv(words), `german-vocab-${todayKey()}.csv`);
 });
 
+renderUserBar('userBar');
 loadWords();

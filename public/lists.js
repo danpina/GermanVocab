@@ -6,7 +6,7 @@ const totalCount = document.getElementById('totalCount');
 let allWords = [];
 
 async function loadAllWords() {
-  const res = await fetch('/api/words');
+  const res = await authedFetch('/api/words');
   allWords = await res.json();
   renderLists();
 }
@@ -62,4 +62,5 @@ exportAllBtn.addEventListener('click', () => {
   downloadCsv(wordsToCsv(allWords), 'german-vocab-all.csv');
 });
 
+renderUserBar('userBar');
 loadAllWords();

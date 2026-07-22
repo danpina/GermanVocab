@@ -1,16 +1,27 @@
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getAllWords, addWord, deleteWord } from './storage.js';
+import {
+  verifyPassword,
+  setAuthCookie,
+  clearAuthCookie,
+  requireAuthApi,
+  requireAuthPage,
+} from './auth.js';
+import { getUserByEmail } from './users.js';
+import { getAllWords, addWord, deleteWord } from './words.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 const PORT = process.env.PORT || 3000;
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 function todayKey() {
   const now = new Date();
@@ -18,7 +29,48 @@ function todayKey() {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
-app.post('/api/translate', async (req, res) => {
+function sendPage(res, file) {
+  res.sendFile(path.join(__dirname, 'public', file));
+}
+
+// --- Public pages ---
+app.get('/login.html', (req, res) => sendPage(res, 'login.html'));
+
+// --- Gated pages ---
+app.get('/', requireAuthPage, (req, res) => sendPage(res, 'index.html'));
+app.get('/index.html', requireAuthPage, (req, res) => sendPage(res, 'index.html'));
+app.get('/lists.html', requireAuthPage, (req, res) => sendPage(res, 'lists.html'));
+
+// --- Auth API ---
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'email and password are required' });
+
+  const user = await getUserByEmail(email);
+  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    return res.status(401).json({ error: 'Incorrect email/ID or password' });
+  }
+
+  setAuthCookie(req, res, user.id);
+  res.json({ email: user.email, isAdmin: user.isAdmin });
+});
+
+app.post('/api/logout', (req, res) => {
+  clearAuthCookie(res);
+  res.status(204).end();
+});
+
+app.get('/api/me', requireAuthApi, (req, res) => {
+  res.json({
+    email: req.user.email,
+    isAdmin: req.user.isAdmin,
+    inputLang: req.user.inputLang,
+    outputLang: req.user.outputLang,
+  });
+});
+
+// --- Translate ---
+app.post('/api/translate', requireAuthApi, async (req, res) => {
   const text = (req.body.text || '').trim();
   if (!text) return res.status(400).json({ error: 'text is required' });
 
@@ -56,19 +108,19 @@ app.post('/api/translate', async (req, res) => {
   }
 });
 
-app.get('/api/words', async (req, res) => {
-  const words = await getAllWords();
+// --- Words (per user) ---
+app.get('/api/words', requireAuthApi, async (req, res) => {
+  const words = await getAllWords(req.user.id);
   res.json(words);
 });
 
-app.post('/api/words', async (req, res) => {
+app.post('/api/words', requireAuthApi, async (req, res) => {
   const { original, translation } = req.body;
   if (!original || !translation) {
     return res.status(400).json({ error: 'original and translation are required' });
   }
 
-  const entry = await addWord({
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+  const entry = await addWord(req.user.id, {
     original,
     translation,
     date: todayKey(),
@@ -77,8 +129,8 @@ app.post('/api/words', async (req, res) => {
   res.status(201).json(entry);
 });
 
-app.delete('/api/words/:id', async (req, res) => {
-  const deleted = await deleteWord(req.params.id);
+app.delete('/api/words/:id', requireAuthApi, async (req, res) => {
+  const deleted = await deleteWord(req.user.id, req.params.id);
   if (!deleted) return res.status(404).json({ error: 'not found' });
   res.status(204).end();
 });

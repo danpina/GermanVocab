@@ -58,6 +58,19 @@ h1 { margin-bottom: 0.25rem; }
 
 .top-nav a:hover { text-decoration: underline; }
 
+.nav-links {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.user-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
 .muted { color: var(--muted); font-size: 0.9rem; }
 
 .lookup, .vocab-list {
@@ -68,7 +81,7 @@ h1 { margin-bottom: 0.25rem; }
   margin-bottom: 1.5rem;
 }
 
-textarea {
+textarea, input[type="text"], input[type="password"], input[type="email"], select {
   width: 100%;
   font-size: 1rem;
   font-family: inherit;
@@ -77,8 +90,24 @@ textarea {
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
-  resize: vertical;
 }
+
+textarea { resize: vertical; }
+
+.auth-main { max-width: 360px; }
+
+.auth-form { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.auth-form label { font-size: 0.9rem; color: var(--muted); margin-top: 0.5rem; }
+
+.auth-form button {
+  margin-top: 1rem;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.auth-form button:hover { background: var(--accent-hover); }
 
 .buttons {
   display: flex;
