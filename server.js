@@ -4,15 +4,19 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import {
+  hashPassword,
   verifyPassword,
   setAuthCookie,
   clearAuthCookie,
   requireAuthApi,
   requireAuthPage,
+  requireAdminApi,
+  requireAdminPage,
 } from './auth.js';
-import { getUserByEmail, updateUser } from './users.js';
+import { getUserByEmail, getAllUsers, createUser, updateUser, deleteUser } from './users.js';
 import { getAllWords, addWord, deleteWord } from './words.js';
 import { LANGUAGES, getLanguage } from './languages.js';
+import { getGameWords, recordGameResult } from './games.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -45,6 +49,8 @@ app.get('/', requireAuthPage, (req, res) => sendPage(res, 'index.html'));
 app.get('/index.html', requireAuthPage, (req, res) => sendPage(res, 'index.html'));
 app.get('/lists.html', requireAuthPage, (req, res) => sendPage(res, 'lists.html'));
 app.get('/settings.html', requireAuthPage, (req, res) => sendPage(res, 'settings.html'));
+app.get('/games.html', requireAuthPage, (req, res) => sendPage(res, 'games.html'));
+app.get('/admin.html', requireAdminPage, (req, res) => sendPage(res, 'admin.html'));
 
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
@@ -69,6 +75,7 @@ app.post('/api/logout', (req, res) => {
 
 app.get('/api/me', requireAuthApi, (req, res) => {
   res.json({
+    id: req.user.id,
     email: req.user.email,
     isAdmin: req.user.isAdmin,
     inputLang: req.user.inputLang,
@@ -162,6 +169,69 @@ app.post('/api/words', requireAuthApi, async (req, res) => {
 
 app.delete('/api/words/:id', requireAuthApi, async (req, res) => {
   const deleted = await deleteWord(req.user.id, req.params.id);
+  if (!deleted) return res.status(404).json({ error: 'not found' });
+  res.status(204).end();
+});
+
+// --- Games ---
+app.get('/api/game/words', requireAuthApi, async (req, res) => {
+  const count = Math.min(parseInt(req.query.count, 10) || 6, 20);
+  const result = await getGameWords(req.user.id, count);
+  res.json(result);
+});
+
+app.post('/api/game/result', requireAuthApi, async (req, res) => {
+  const { wordId, correct } = req.body;
+  if (!wordId || typeof correct !== 'boolean') {
+    return res.status(400).json({ error: 'wordId and correct (boolean) are required' });
+  }
+  await recordGameResult(req.user.id, wordId, correct);
+  res.status(204).end();
+});
+
+// --- Admin ---
+function toAdminUser(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    isAdmin: user.isAdmin,
+    inputLang: user.inputLang,
+    outputLang: user.outputLang,
+    createdAt: user.createdAt,
+  };
+}
+
+app.get('/api/admin/users', requireAdminApi, async (req, res) => {
+  const users = await getAllUsers();
+  res.json(users.map(toAdminUser));
+});
+
+app.post('/api/admin/users', requireAdminApi, async (req, res) => {
+  const { email, password, isAdmin } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'email and password are required' });
+
+  const existing = await getUserByEmail(email);
+  if (existing) return res.status(409).json({ error: 'A user with that email/ID already exists' });
+
+  const user = await createUser({ email, passwordHash: await hashPassword(password), isAdmin: !!isAdmin });
+  res.status(201).json(toAdminUser(user));
+});
+
+app.patch('/api/admin/users/:id', requireAdminApi, async (req, res) => {
+  const { email, password, isAdmin, inputLang, outputLang } = req.body;
+  const fields = { email, isAdmin, inputLang, outputLang };
+  if (password) fields.passwordHash = await hashPassword(password);
+
+  const updated = await updateUser(req.params.id, fields);
+  if (!updated) return res.status(404).json({ error: 'not found' });
+  res.json(toAdminUser(updated));
+});
+
+app.delete('/api/admin/users/:id', requireAdminApi, async (req, res) => {
+  if (req.params.id === req.user.id) {
+    return res.status(400).json({ error: "You can't delete your own account while logged in as it" });
+  }
+  const deleted = await deleteUser(req.params.id);
   if (!deleted) return res.status(404).json({ error: 'not found' });
   res.status(204).end();
 });

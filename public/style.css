@@ -95,6 +95,7 @@ textarea, input[type="text"], input[type="password"], input[type="email"], selec
 textarea { resize: vertical; }
 
 .auth-main { max-width: 360px; }
+.wide-main { max-width: 900px; }
 
 .auth-form { display: flex; flex-direction: column; gap: 0.4rem; }
 
@@ -105,9 +106,37 @@ textarea { resize: vertical; }
   background: var(--accent);
   border-color: var(--accent);
   color: white;
+  align-self: flex-start;
 }
 
 .auth-form button:hover { background: var(--accent-hover); }
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.checkbox-label input { width: auto; }
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th, .admin-table td {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.admin-table th { color: var(--muted); font-weight: 600; }
+
+.admin-table td input, .admin-table td select { padding: 0.4rem; font-size: 0.85rem; }
+
+.reset-password-input { width: 11rem; }
 
 .buttons {
   display: flex;
@@ -207,3 +236,76 @@ button:hover { border-color: var(--accent); }
   font-size: 0.85rem;
   padding: 0.4rem 0.7rem;
 }
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.mode-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.mode-option input { width: auto; margin-top: 0.2rem; }
+.mode-option span { color: var(--muted); }
+.mode-option strong { color: var(--text); }
+
+.mode-option-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+
+.mode-option-inline input { width: auto; }
+
+.prompt {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+}
+
+.hint {
+  font-size: 1.3rem;
+  letter-spacing: 0.15rem;
+  color: var(--muted);
+  font-family: monospace;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.choices button {
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+.choices button.correct {
+  background: #2e7d32;
+  border-color: #2e7d32;
+  color: white;
+}
+
+.choices button.wrong {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: white;
+}
+
+.feedback { font-size: 1.05rem; font-weight: 600; margin: 0.75rem 0; }
+
+#missedList { padding-left: 1.2rem; }
+#missedList li { margin-bottom: 0.3rem; }

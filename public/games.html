@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Games — German Vocab Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <nav class="top-nav">
+      <h1>Games</h1>
+      <div class="nav-links">
+        <a href="index.html">← Back to today</a>
+        <span id="userBar" class="user-bar"></span>
+      </div>
+    </nav>
+    <p class="subtitle">Practice your saved words. Words you get wrong show up more often.</p>
+
+    <section id="modeSelect" class="lookup">
+      <div class="mode-grid">
+        <label class="mode-option">
+          <input type="radio" name="mode" value="a" checked />
+          <span><strong>Multiple choice</strong><br />See it, pick the translation</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="mode" value="b" />
+          <span><strong>Multiple choice (reversed)</strong><br />See the translation, pick the word</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="mode" value="c" />
+          <span><strong>Type it</strong><br />See the translation, type the word</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="mode" value="d" />
+          <span><strong>Type it (reversed)</strong><br />See the word, type the translation</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="mode" value="e" />
+          <span><strong>Mixed bag</strong><br />A random mix of all four</span>
+        </label>
+      </div>
+
+      <div id="difficultyRow" class="buttons hidden">
+        <label class="mode-option-inline"><input type="radio" name="difficulty" value="easy" checked /> Easy</label>
+        <label class="mode-option-inline"><input type="radio" name="difficulty" value="medium" /> Medium</label>
+        <label class="mode-option-inline"><input type="radio" name="difficulty" value="hard" /> Hard</label>
+      </div>
+
+      <div class="buttons">
+        <button id="startBtn">Start game</button>
+      </div>
+      <p id="notEnoughWords" class="error hidden"></p>
+    </section>
+
+    <section id="gameScreen" class="lookup hidden">
+      <p class="muted"><span id="roundLabel"></span> · Score: <span id="scoreLabel">0</span></p>
+      <p id="prompt" class="prompt"></p>
+      <p id="hint" class="hint hidden"></p>
+
+      <div id="choicesArea" class="choices hidden"></div>
+
+      <div id="typeArea" class="hidden">
+        <input type="text" id="typeInput" autocomplete="off" />
+        <div class="buttons">
+          <button id="submitTypeBtn">Submit</button>
+        </div>
+      </div>
+
+      <p id="feedback" class="feedback hidden"></p>
+      <div class="buttons">
+        <button id="nextBtn" class="hidden">Next</button>
+      </div>
+    </section>
+
+    <section id="resultsScreen" class="lookup hidden">
+      <h2>Score: <span id="finalScore"></span></h2>
+      <ul id="missedList"></ul>
+      <div class="buttons">
+        <button id="playAgainBtn">Play again</button>
+        <button id="changeModeBtn">Choose a different mode</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="languages.js"></script>
+  <script src="common.js"></script>
+  <script src="games.js"></script>
+</body>
+</html>

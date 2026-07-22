@@ -15,6 +15,20 @@ async function renderUserBar(containerId) {
   const user = await res.json();
 
   container.innerHTML = '';
+
+  const gamesLink = document.createElement('a');
+  gamesLink.href = 'games.html';
+  gamesLink.textContent = '🎮 Games';
+
+  const links = [gamesLink];
+
+  if (user.isAdmin) {
+    const adminLink = document.createElement('a');
+    adminLink.href = 'admin.html';
+    adminLink.textContent = '🛠 Admin';
+    links.push(adminLink);
+  }
+
   const emailSpan = document.createElement('span');
   emailSpan.className = 'muted';
   emailSpan.textContent = user.email;
@@ -28,7 +42,7 @@ async function renderUserBar(containerId) {
     window.location.href = '/login.html';
   });
 
-  container.append(emailSpan, logoutLink);
+  container.append(...links, emailSpan, logoutLink);
   return user;
 }
 

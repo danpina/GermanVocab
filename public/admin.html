@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin — German Vocab Helper</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wide-main">
+    <nav class="top-nav">
+      <h1>Admin</h1>
+      <div class="nav-links">
+        <a href="index.html">← Back to today</a>
+        <span id="userBar" class="user-bar"></span>
+      </div>
+    </nav>
+    <p class="subtitle">Create and manage user accounts.</p>
+
+    <section class="lookup">
+      <h2>Add user</h2>
+      <form id="createForm" class="auth-form">
+        <label for="newEmail">Email or user ID</label>
+        <input type="text" id="newEmail" required />
+
+        <label for="newPassword">Password</label>
+        <input type="password" id="newPassword" required />
+
+        <label class="checkbox-label"><input type="checkbox" id="newIsAdmin" /> Admin access</label>
+
+        <button id="createBtn" type="submit">Create user</button>
+        <p id="createError" class="error hidden"></p>
+      </form>
+    </section>
+
+    <section class="vocab-list">
+      <h2>Users</h2>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Email / ID</th>
+            <th>Admin</th>
+            <th>Learning</th>
+            <th>Translate into</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="userRows"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="languages.js"></script>
+  <script src="common.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
