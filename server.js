@@ -22,7 +22,6 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 function todayKey() {
   const now = new Date();
@@ -34,6 +33,10 @@ function sendPage(res, file) {
   res.sendFile(path.join(__dirname, 'public', file));
 }
 
+// These must come before express.static below — static would otherwise serve these
+// exact filenames directly and skip the auth check entirely (index:false only stops
+// the implicit "/" -> index.html lookup, not direct requests for a named .html file).
+
 // --- Public pages ---
 app.get('/login.html', (req, res) => sendPage(res, 'login.html'));
 
@@ -42,6 +45,8 @@ app.get('/', requireAuthPage, (req, res) => sendPage(res, 'index.html'));
 app.get('/index.html', requireAuthPage, (req, res) => sendPage(res, 'index.html'));
 app.get('/lists.html', requireAuthPage, (req, res) => sendPage(res, 'lists.html'));
 app.get('/settings.html', requireAuthPage, (req, res) => sendPage(res, 'settings.html'));
+
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // --- Auth API ---
 app.post('/api/login', async (req, res) => {
