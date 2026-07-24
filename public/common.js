@@ -86,38 +86,94 @@ function formatDateLabel(key) {
   });
 }
 
-function createWordListItem(word, onDeleted) {
+function createWordListItem(word, onUpdated) {
   const li = document.createElement('li');
-
-  const textDiv = document.createElement('div');
-  textDiv.className = 'entry-text';
-  const original = document.createElement('p');
-  original.className = 'original';
-  original.textContent = word.original;
-  const translation = document.createElement('p');
-  translation.className = 'translation';
-  translation.textContent = word.translation;
-  textDiv.append(original, translation);
-
-  const actions = document.createElement('div');
-  actions.className = 'entry-actions';
-
-  const speakBtn = document.createElement('button');
-  speakBtn.textContent = '🔊';
-  speakBtn.title = 'Read aloud';
-  speakBtn.addEventListener('click', () => speak(word.original, getLanguage(word.inputLang).speechLocale));
-
-  const deleteBtn = document.createElement('button');
-  deleteBtn.textContent = '🗑';
-  deleteBtn.title = 'Delete';
-  deleteBtn.addEventListener('click', async () => {
-    await authedFetch(`/api/words/${word.id}`, { method: 'DELETE' });
-    onDeleted();
-  });
-
-  actions.append(speakBtn, deleteBtn);
-  li.append(textDiv, actions);
+  renderView();
   return li;
+
+  function renderView() {
+    li.innerHTML = '';
+
+    const textDiv = document.createElement('div');
+    textDiv.className = 'entry-text';
+    const original = document.createElement('p');
+    original.className = 'original';
+    original.textContent = word.original;
+    const translation = document.createElement('p');
+    translation.className = 'translation';
+    translation.textContent = word.translation;
+    textDiv.append(original, translation);
+
+    const actions = document.createElement('div');
+    actions.className = 'entry-actions';
+
+    const speakBtn = document.createElement('button');
+    speakBtn.textContent = '🔊';
+    speakBtn.title = 'Read aloud';
+    speakBtn.addEventListener('click', () => speak(word.original, getLanguage(word.inputLang).speechLocale));
+
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '✏️';
+    editBtn.title = 'Edit';
+    editBtn.addEventListener('click', renderEdit);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '🗑';
+    deleteBtn.title = 'Delete';
+    deleteBtn.addEventListener('click', async () => {
+      await authedFetch(`/api/words/${word.id}`, { method: 'DELETE' });
+      onUpdated();
+    });
+
+    actions.append(speakBtn, editBtn, deleteBtn);
+    li.append(textDiv, actions);
+  }
+
+  function renderEdit() {
+    li.innerHTML = '';
+
+    const textDiv = document.createElement('div');
+    textDiv.className = 'entry-text entry-edit';
+
+    const originalInput = document.createElement('input');
+    originalInput.type = 'text';
+    originalInput.value = word.original;
+
+    const translationInput = document.createElement('input');
+    translationInput.type = 'text';
+    translationInput.value = word.translation;
+
+    textDiv.append(originalInput, translationInput);
+
+    const actions = document.createElement('div');
+    actions.className = 'entry-actions';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Save';
+    saveBtn.addEventListener('click', async () => {
+      const newOriginal = originalInput.value.trim();
+      const newTranslation = translationInput.value.trim();
+      if (!newOriginal || !newTranslation) return;
+
+      const res = await authedFetch(`/api/words/${word.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ original: newOriginal, translation: newTranslation }),
+      });
+      if (!res.ok) {
+        alert('Could not save changes');
+        return;
+      }
+      onUpdated();
+    });
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', renderView);
+
+    actions.append(saveBtn, cancelBtn);
+    li.append(textDiv, actions);
+  }
 }
 
 function wordsToCsv(words) {

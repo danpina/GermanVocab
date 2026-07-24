@@ -18,6 +18,17 @@
     </nav>
     <p class="subtitle">Everything you've saved, grouped by the day you saved it.</p>
 
+    <section class="lookup">
+      <h2>Add words in bulk</h2>
+      <p class="muted">One pair per line, separated by a colon: <code>word : translation</code></p>
+      <textarea id="bulkInput" rows="6" placeholder="Hund : dog&#10;Katze : cat&#10;guten Morgen : good morning"></textarea>
+      <div class="buttons">
+        <button id="bulkAddBtn">Add these words</button>
+      </div>
+      <p id="bulkError" class="error hidden"></p>
+      <p id="bulkSuccess" class="empty hidden"></p>
+    </section>
+
     <div class="list-header">
       <span id="totalCount" class="muted"></span>
       <button id="exportAllBtn">Export all as CSV</button>

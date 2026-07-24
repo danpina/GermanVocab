@@ -58,6 +58,10 @@ function buildHint(word, difficulty) {
     .join(' ');
 }
 
+function normalizeAnswer(text) {
+  return text.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
 function shuffle(array) {
   const copy = [...array];
   for (let i = copy.length - 1; i > 0; i--) {
@@ -68,7 +72,7 @@ function shuffle(array) {
 }
 
 function pickDistractors(pool, correctText, count) {
-  const candidates = pool.filter((text) => text.toLowerCase() !== correctText.toLowerCase());
+  const candidates = pool.filter((text) => normalizeAnswer(text) !== normalizeAnswer(correctText));
   const unique = [...new Set(candidates)];
   return shuffle(unique).slice(0, count);
 }
@@ -143,7 +147,7 @@ function playChoiceRound(round) {
     btn.textContent = option;
     btn.addEventListener('click', () => {
       if (answered) return;
-      handleAnswer(option.toLowerCase() === correctText.toLowerCase(), correctText, btn);
+      handleAnswer(normalizeAnswer(option) === normalizeAnswer(correctText), correctText, btn);
     });
     choicesArea.appendChild(btn);
   }
@@ -163,8 +167,7 @@ function playTypeRound(round) {
 
   const submit = () => {
     if (answered) return;
-    const value = typeInput.value.trim();
-    handleAnswer(value.toLowerCase() === correctText.toLowerCase(), correctText);
+    handleAnswer(normalizeAnswer(typeInput.value) === normalizeAnswer(correctText), correctText);
   };
 
   submitTypeBtn.onclick = submit;
@@ -192,7 +195,7 @@ async function handleAnswer(correct, correctText, clickedBtn) {
   }
   for (const btn of choicesArea.querySelectorAll('button')) {
     btn.disabled = true;
-    if (btn.textContent.toLowerCase() === correctText.toLowerCase()) {
+    if (normalizeAnswer(btn.textContent) === normalizeAnswer(correctText)) {
       btn.classList.add('correct');
     }
   }

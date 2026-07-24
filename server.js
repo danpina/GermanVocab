@@ -14,7 +14,7 @@ import {
   requireAdminPage,
 } from './auth.js';
 import { getUserByEmail, getAllUsers, createUser, updateUser, deleteUser } from './users.js';
-import { getAllWords, addWord, deleteWord } from './words.js';
+import { getAllWords, addWord, addWords, updateWord, deleteWord, deleteWordsByDate } from './words.js';
 import { LANGUAGES, getLanguage } from './languages.js';
 import { getGameWords, recordGameResult } from './games.js';
 import { getWordStats, resetWordStats } from './stats.js';
@@ -167,6 +167,43 @@ app.post('/api/words', requireAuthApi, async (req, res) => {
     outputLang: req.user.outputLang,
   });
   res.status(201).json(entry);
+});
+
+app.post('/api/words/bulk', requireAuthApi, async (req, res) => {
+  const { words } = req.body;
+  if (!Array.isArray(words) || words.length === 0) {
+    return res.status(400).json({ error: 'words array is required' });
+  }
+
+  const date = todayKey();
+  const createdAt = new Date().toISOString();
+  const entries = words
+    .filter((w) => w.original?.trim() && w.translation?.trim())
+    .map((w) => ({
+      original: w.original.trim(),
+      translation: w.translation.trim(),
+      date,
+      createdAt,
+      inputLang: req.user.inputLang,
+      outputLang: req.user.outputLang,
+    }));
+
+  const created = await addWords(req.user.id, entries);
+  res.status(201).json({ added: created.length, skipped: words.length - entries.length });
+});
+
+app.patch('/api/words/:id', requireAuthApi, async (req, res) => {
+  const { original, translation } = req.body;
+  const updated = await updateWord(req.user.id, req.params.id, { original, translation });
+  if (!updated) return res.status(404).json({ error: 'not found' });
+  res.json(updated);
+});
+
+app.delete('/api/words', requireAuthApi, async (req, res) => {
+  const { date } = req.query;
+  if (!date) return res.status(400).json({ error: 'date query parameter is required' });
+  const count = await deleteWordsByDate(req.user.id, date);
+  res.json({ deleted: count });
 });
 
 app.delete('/api/words/:id', requireAuthApi, async (req, res) => {
