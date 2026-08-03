@@ -8,6 +8,7 @@ function rowToUser(row) {
     isAdmin: !!row.is_admin,
     inputLang: row.input_lang,
     outputLang: row.output_lang,
+    wordsPerGame: row.words_per_game,
     createdAt: row.created_at,
   };
 }
@@ -48,6 +49,7 @@ export async function updateUser(id, fields) {
     isAdmin: 'is_admin',
     inputLang: 'input_lang',
     outputLang: 'output_lang',
+    wordsPerGame: 'words_per_game',
   };
 
   const sets = [];

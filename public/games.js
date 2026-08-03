@@ -21,7 +21,6 @@ const missedList = document.getElementById('missedList');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const changeModeBtn = document.getElementById('changeModeBtn');
 
-const ROUND_COUNT = 6;
 const TYPE_MODES = ['c', 'd'];
 
 let sessionWords = [];
@@ -79,7 +78,7 @@ function pickDistractors(pool, correctText, count) {
 
 startBtn.addEventListener('click', async () => {
   notEnoughWords.classList.add('hidden');
-  const res = await authedFetch(`/api/game/words?count=${ROUND_COUNT}`);
+  const res = await authedFetch('/api/game/words');
   const data = await res.json();
 
   if (data.words.length < data.minRequired) {

@@ -39,6 +39,10 @@ async function init() {
     )
   `);
 
+  if (!(await columnExists('users', 'words_per_game'))) {
+    await client.execute('ALTER TABLE users ADD COLUMN words_per_game INTEGER NOT NULL DEFAULT 6');
+  }
+
   await client.execute(`
     CREATE TABLE IF NOT EXISTS words (
       id TEXT PRIMARY KEY,

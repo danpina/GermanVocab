@@ -15,7 +15,7 @@
         <span id="userBar" class="user-bar"></span>
       </div>
     </nav>
-    <p class="subtitle">Choose which language you're learning and which one you want translations in.</p>
+    <p class="subtitle">Choose which language you're learning, which one you want translations in, and how Games plays.</p>
 
     <form id="settingsForm" class="lookup auth-form">
       <label for="inputLang">I'm learning</label>
@@ -23,6 +23,9 @@
 
       <label for="outputLang">Translate into</label>
       <select id="outputLang" name="outputLang"></select>
+
+      <label for="wordsPerGame">Words per game (3–20)</label>
+      <input type="number" id="wordsPerGame" name="wordsPerGame" min="3" max="20" required />
 
       <button id="saveBtn" type="submit">Save</button>
       <p id="error" class="error hidden"></p>

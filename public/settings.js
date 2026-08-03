@@ -1,6 +1,7 @@
 const settingsForm = document.getElementById('settingsForm');
 const inputLangSelect = document.getElementById('inputLang');
 const outputLangSelect = document.getElementById('outputLang');
+const wordsPerGameInput = document.getElementById('wordsPerGame');
 const saveBtn = document.getElementById('saveBtn');
 const errorEl = document.getElementById('error');
 const savedEl = document.getElementById('saved');
@@ -22,6 +23,7 @@ async function loadCurrentSettings() {
   if (!user) return;
   inputLangSelect.value = user.inputLang;
   outputLangSelect.value = user.outputLang;
+  wordsPerGameInput.value = user.wordsPerGame;
 }
 
 settingsForm.addEventListener('submit', async (event) => {
@@ -37,6 +39,7 @@ settingsForm.addEventListener('submit', async (event) => {
       body: JSON.stringify({
         inputLang: inputLangSelect.value,
         outputLang: outputLangSelect.value,
+        wordsPerGame: parseInt(wordsPerGameInput.value, 10),
       }),
     });
     const data = await res.json();

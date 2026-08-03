@@ -22,6 +22,8 @@ import { getWordStats, resetWordStats } from './stats.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
 const PORT = process.env.PORT || 3000;
+const WORDS_PER_GAME_MIN = 3;
+const WORDS_PER_GAME_MAX = 20;
 
 const app = express();
 app.set('trust proxy', 1);
@@ -82,11 +84,12 @@ app.get('/api/me', requireAuthApi, (req, res) => {
     isAdmin: req.user.isAdmin,
     inputLang: req.user.inputLang,
     outputLang: req.user.outputLang,
+    wordsPerGame: req.user.wordsPerGame,
   });
 });
 
 app.patch('/api/me', requireAuthApi, async (req, res) => {
-  const { inputLang, outputLang } = req.body;
+  const { inputLang, outputLang, wordsPerGame } = req.body;
   const validCodes = LANGUAGES.map((l) => l.code);
   if (inputLang && !validCodes.includes(inputLang)) {
     return res.status(400).json({ error: `Unknown language code: ${inputLang}` });
@@ -94,13 +97,17 @@ app.patch('/api/me', requireAuthApi, async (req, res) => {
   if (outputLang && !validCodes.includes(outputLang)) {
     return res.status(400).json({ error: `Unknown language code: ${outputLang}` });
   }
+  if (wordsPerGame !== undefined && (wordsPerGame < WORDS_PER_GAME_MIN || wordsPerGame > WORDS_PER_GAME_MAX)) {
+    return res.status(400).json({ error: `wordsPerGame must be between ${WORDS_PER_GAME_MIN} and ${WORDS_PER_GAME_MAX}` });
+  }
 
-  const updated = await updateUser(req.user.id, { inputLang, outputLang });
+  const updated = await updateUser(req.user.id, { inputLang, outputLang, wordsPerGame });
   res.json({
     email: updated.email,
     isAdmin: updated.isAdmin,
     inputLang: updated.inputLang,
     outputLang: updated.outputLang,
+    wordsPerGame: updated.wordsPerGame,
   });
 });
 
@@ -214,7 +221,8 @@ app.delete('/api/words/:id', requireAuthApi, async (req, res) => {
 
 // --- Games ---
 app.get('/api/game/words', requireAuthApi, async (req, res) => {
-  const count = Math.min(parseInt(req.query.count, 10) || 6, 20);
+  const requested = parseInt(req.query.count, 10) || req.user.wordsPerGame;
+  const count = Math.min(Math.max(requested, WORDS_PER_GAME_MIN), WORDS_PER_GAME_MAX);
   const result = await getGameWords(req.user.id, count);
   res.json(result);
 });
