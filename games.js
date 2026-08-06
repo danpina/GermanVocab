@@ -13,10 +13,13 @@ function rowToGameWord(row) {
 }
 
 // Weighted sample-without-replacement: words the user gets wrong more often show up
-// more often. Never-seen words keep a baseline weight so they still surface; words
-// with a strong correct streak settle back down near that baseline.
+// more often (weight climbs toward 4). Never-seen words get their own boost (2.5) so
+// fresh vocab surfaces before it's mastered; words with a strong correct streak settle
+// back down to the baseline (1).
 function weightOf(correctCount, incorrectCount) {
-  return 1 + (3 * incorrectCount) / (correctCount + incorrectCount + 1);
+  const total = correctCount + incorrectCount;
+  if (total === 0) return 2.5;
+  return 1 + (3 * incorrectCount) / (total + 1);
 }
 
 function weightedSample(items, weights, count) {

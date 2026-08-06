@@ -26,12 +26,15 @@ function renderStats(stats) {
     translationTd.textContent = word.translation;
 
     const correctTd = document.createElement('td');
+    correctTd.className = 'num';
     correctTd.textContent = word.correctCount;
 
     const incorrectTd = document.createElement('td');
+    incorrectTd.className = 'num';
     incorrectTd.textContent = word.incorrectCount;
 
     const accuracyTd = document.createElement('td');
+    accuracyTd.className = 'num';
     accuracyTd.textContent = `${accuracy}%`;
 
     tr.append(originalTd, translationTd, correctTd, incorrectTd, accuracyTd);

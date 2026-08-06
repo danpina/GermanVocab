@@ -134,6 +134,8 @@ textarea { resize: vertical; }
 
 .admin-table th { color: var(--muted); font-weight: 600; }
 
+.admin-table th.num, .admin-table td.num { text-align: right; }
+
 .admin-table td input, .admin-table td select { padding: 0.4rem; font-size: 0.85rem; }
 
 .reset-password-input { width: 11rem; }
