@@ -58,7 +58,7 @@ function buildHint(word, difficulty) {
 }
 
 function normalizeAnswer(text) {
-  return text.trim().toLowerCase().replace(/\s+/g, ' ');
+  return text.toLowerCase().replace(/[\s-]+/g, '');
 }
 
 function shuffle(array) {
