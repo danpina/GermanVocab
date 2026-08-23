@@ -1,0 +1,84 @@
+# German Vocab Helper — iOS app
+
+A native SwiftUI client for the same backend the web app uses (`server.js` at the
+repo root). It talks to the existing Express API over HTTP(S) exactly like the
+browser does — no backend changes needed, and no data model duplicated here.
+
+The `.xcodeproj` is **not** checked into git. It's generated from `project.yml` by
+[XcodeGen](https://github.com/yonaskolb/XcodeGen), so there's nothing to
+hand-edit or merge-conflict in Xcode's project file format.
+
+## One-time setup (needs a Mac)
+
+1. Install Xcode from the App Store (free). Open it once so it finishes
+   installing components.
+2. Install XcodeGen:
+   ```bash
+   brew install xcodegen
+   ```
+3. Generate the project:
+   ```bash
+   cd ios
+   xcodegen generate
+   ```
+4. Open `GermanVocabHelper.xcodeproj` in Xcode.
+5. Select the `GermanVocabHelper` target → *Signing & Capabilities* → set your
+   Team (a free personal Apple ID works for Simulator/device testing; TestFlight
+   and App Store distribution need the paid $99/yr Apple Developer Program).
+6. Pick a Simulator (e.g. iPhone 15) and hit Run (⌘R).
+
+Re-run `xcodegen generate` any time `project.yml` changes (new files under
+`GermanVocabHelper/` are picked up automatically — you don't need to regenerate
+just for a new `.swift` file, only for target/setting changes).
+
+## Pointing the app at a backend
+
+The app doesn't hardcode a server — it asks for a **Server URL** the first time
+you log in (stored on-device, editable later from Settings → Server).
+
+- **Simulator + your Mac's local dev server**: `http://localhost:3000` — the
+  Simulator shares your Mac's network stack, so running `npm start` on the Mac
+  and using that URL just works.
+- **A physical iPhone on the same Wi-Fi** as your dev machine: use your Mac's LAN
+  IP instead of localhost, e.g. `http://192.168.1.23:3000`.
+- **Once the backend is deployed publicly** (Render, Fly.io, Railway, a VPS,
+  etc.) with HTTPS: use that URL. iOS requires HTTPS for anything that isn't
+  localhost or a private LAN address (`NSAllowsLocalNetworking` in
+  `project.yml` covers the local case), and the App Store requires HTTPS
+  outright — so a public HTTPS deployment is a prerequisite before this can
+  reach TestFlight.
+
+Login uses the same cookie-based session as the web app. `URLSession` stores and
+resends that cookie automatically (it survives app relaunches, same 30-day
+expiry as the browser session), so there's no separate mobile auth to build or
+maintain.
+
+## What's implemented
+
+- **Login** — email/password against `/api/login`, session cookie persisted by `URLSession`
+- **Today** — translate (`/api/translate`), save, speak (`AVSpeechSynthesizer`), dictate (`Speech` framework)
+- **Lists** — grouped by day, bulk add, edit/delete, CSV export via the share sheet, delete a whole day
+- **Games** — all 5 modes, difficulty levels, scoring, missed-words summary, same answer-normalization rules as the web app (case/space/hyphen-insensitive)
+- **Stats** — worst-first table, reset
+- **Settings** — language pickers, words-per-game, server URL, logout
+
+**Not ported:** the Admin screen (user management). It's a niche feature for a
+personal project — add it later the same way as the other screens if you end up
+needing it on mobile.
+
+## Path to TestFlight
+
+1. Deploy the backend somewhere with HTTPS, if it isn't already.
+2. Enroll in the Apple Developer Program ($99/yr), if you haven't.
+3. In Xcode: confirm a unique bundle identifier (currently
+   `com.danipina.germanvocabhelper` in `project.yml` — change the prefix if you
+   want a different one), and add a 1024×1024 app icon to
+   `GermanVocabHelper/Resources/Assets.xcassets/AppIcon.appiconset` (there's a
+   placeholder slot but no image yet).
+4. Product → Archive, then use the Organizer window to upload to App Store
+   Connect. TestFlight builds are available within minutes of upload; App Store
+   review is a separate, later step you only need once you want a public listing.
+5. Consider setting up **Xcode Cloud** once you have a paid Developer account
+   (free tier: 25 compute-hours/month) so future TestFlight builds can be
+   triggered by a git push instead of needing an interactive rented-Mac session
+   every time.

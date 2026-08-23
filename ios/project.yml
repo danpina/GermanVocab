@@ -1,0 +1,34 @@
+name: GermanVocabHelper
+options:
+  bundleIdPrefix: com.danipina
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+configs:
+  Debug: debug
+  Release: release
+targets:
+  GermanVocabHelper:
+    type: application
+    platform: iOS
+    sources:
+      - GermanVocabHelper
+    info:
+      path: Generated/Info.plist
+      properties:
+        CFBundleDisplayName: Vocab Helper
+        UILaunchScreen: {}
+        NSMicrophoneUsageDescription: "Vocab Helper uses the microphone so you can dictate words instead of typing them."
+        NSSpeechRecognitionUsageDescription: "Vocab Helper turns what you dictate into text to save as a word."
+        ITSAppUsesNonExemptEncryption: false
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.danipina.germanvocabhelper
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
