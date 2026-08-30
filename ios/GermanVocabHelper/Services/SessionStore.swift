@@ -46,6 +46,38 @@ final class SessionStore: ObservableObject {
         }
     }
 
+    func register(email: String, password: String) async -> Bool {
+        errorMessage = nil
+        do {
+            struct RegisterBody: Encodable { let email: String; let password: String }
+            let _: LoginResponse = try await APIClient.shared.send(
+                "/api/register", method: .post,
+                body: RegisterBody(email: email, password: password)
+            )
+            await refreshMe()
+            return user != nil
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
+    func loginWithApple(identityToken: String, email: String?) async -> Bool {
+        errorMessage = nil
+        do {
+            struct AppleBody: Encodable { let identityToken: String; let email: String? }
+            let _: LoginResponse = try await APIClient.shared.send(
+                "/api/auth/apple", method: .post,
+                body: AppleBody(identityToken: identityToken, email: email)
+            )
+            await refreshMe()
+            return user != nil
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
     func logout() async {
         try? await APIClient.shared.sendNoContent("/api/logout", method: .post)
         user = nil

@@ -13,11 +13,13 @@ import {
   requireAdminApi,
   requireAdminPage,
 } from './auth.js';
-import { getUserByEmail, getAllUsers, createUser, updateUser, deleteUser } from './users.js';
+import { getUserByEmail, getUserByAppleSub, getAllUsers, createUser, updateUser, deleteUser } from './users.js';
 import { getAllWords, addWord, addWords, updateWord, deleteWord, deleteWordsByDate } from './words.js';
 import { LANGUAGES, getLanguage } from './languages.js';
 import { getGameWords, recordGameResult } from './games.js';
 import { getWordStats, resetWordStats } from './stats.js';
+import { verifyAppleIdentityToken } from './appleAuth.js';
+import crypto from 'crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -46,6 +48,7 @@ function sendPage(res, file) {
 
 // --- Public pages ---
 app.get('/login.html', (req, res) => sendPage(res, 'login.html'));
+app.get('/register.html', (req, res) => sendPage(res, 'register.html'));
 
 // --- Gated pages ---
 app.get('/', requireAuthPage, (req, res) => sendPage(res, 'index.html'));
@@ -75,6 +78,64 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/logout', (req, res) => {
   clearAuthCookie(res);
   res.status(204).end();
+});
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+app.post('/api/register', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'email and password are required' });
+  }
+  if (!EMAIL_PATTERN.test(email)) {
+    return res.status(400).json({ error: 'Enter a valid email address' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters' });
+  }
+
+  const existing = await getUserByEmail(email);
+  if (existing) return res.status(409).json({ error: 'An account with that email already exists' });
+
+  const user = await createUser({ email, passwordHash: await hashPassword(password) });
+  setAuthCookie(req, res, user.id);
+  res.status(201).json({ email: user.email, isAdmin: user.isAdmin });
+});
+
+app.post('/api/auth/apple', async (req, res) => {
+  const { identityToken, email: providedEmail } = req.body;
+  if (!identityToken) return res.status(400).json({ error: 'identityToken is required' });
+
+  let claims;
+  try {
+    claims = await verifyAppleIdentityToken(identityToken);
+  } catch (err) {
+    return res.status(401).json({ error: `Invalid Apple credential: ${err.message}` });
+  }
+
+  const appleSub = claims.sub;
+  let user = await getUserByAppleSub(appleSub);
+
+  if (!user) {
+    // `email` on the token is Apple's verified address (real or private-relay) and is
+    // present on every sign-in; the client only sends its own copy the very first time.
+    const email = claims.email || providedEmail || null;
+    const existingByEmail = email ? await getUserByEmail(email) : null;
+
+    if (existingByEmail) {
+      user = await updateUser(existingByEmail.id, { appleSub });
+    } else {
+      const placeholderPassword = crypto.randomBytes(32).toString('hex');
+      user = await createUser({
+        email: email || `apple-${appleSub}@germanvocabhelper.local`,
+        passwordHash: await hashPassword(placeholderPassword),
+        appleSub,
+      });
+    }
+  }
+
+  setAuthCookie(req, res, user.id);
+  res.json({ email: user.email, isAdmin: user.isAdmin });
 });
 
 app.get('/api/me', requireAuthApi, (req, res) => {

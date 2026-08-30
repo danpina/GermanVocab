@@ -43,6 +43,15 @@ async function init() {
     await client.execute('ALTER TABLE users ADD COLUMN words_per_game INTEGER NOT NULL DEFAULT 6');
   }
 
+  // Stable Apple user identifier for accounts created via Sign in with Apple.
+  // Nullable — most accounts (email/password, admin-created) never set it.
+  if (!(await columnExists('users', 'apple_sub'))) {
+    await client.execute('ALTER TABLE users ADD COLUMN apple_sub TEXT');
+    await client.execute(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_users_apple_sub ON users(apple_sub) WHERE apple_sub IS NOT NULL'
+    );
+  }
+
   await client.execute(`
     CREATE TABLE IF NOT EXISTS words (
       id TEXT PRIMARY KEY,

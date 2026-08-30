@@ -55,7 +55,7 @@ maintain.
 
 ## What's implemented
 
-- **Login** — email/password against `/api/login`, session cookie persisted by `URLSession`
+- **Login / Sign up** — email/password against `/api/login` and `/api/register`, plus native **Sign in with Apple**, session cookie persisted by `URLSession`
 - **Today** — translate (`/api/translate`), save, speak (`AVSpeechSynthesizer`), dictate (`Speech` framework)
 - **Lists** — grouped by day, bulk add, edit/delete, CSV export via the share sheet, delete a whole day
 - **Games** — all 5 modes, difficulty levels, scoring, missed-words summary, same answer-normalization rules as the web app (case/space/hyphen-insensitive)
@@ -66,13 +66,35 @@ maintain.
 personal project — add it later the same way as the other screens if you end up
 needing it on mobile.
 
+## Sign in with Apple — setup required
+
+The code and entitlement are in place, but the capability itself has to be
+enabled on Apple's side, which needs a **paid** Apple Developer Program
+membership (the free tier can't provision it):
+
+1. Enroll in the Apple Developer Program ($99/yr) if you haven't yet — see
+   *Path to TestFlight* below, since you need this either way.
+2. In Xcode, with your paid-account Team selected and "Automatically manage
+   signing" checked, the **Sign In with Apple** capability (declared in
+   `project.yml`'s `entitlements` block) gets auto-registered against the
+   App ID the first time you build — no manual portal visit needed.
+3. Backend side: set `APPLE_BUNDLE_ID` in `.env` to match
+   `PRODUCT_BUNDLE_IDENTIFIER` in `project.yml` (already done —
+   `com.danipina.germanvocabhelper` in both). The server verifies Apple's
+   identity token against this as the expected audience; a mismatch here is
+   the most common cause of an "Invalid Apple credential" error.
+4. Until the capability is provisioned (i.e. before you have a paid account),
+   the Sign In with Apple button will fail — email/password login and sign-up
+   work regardless, so you're not blocked on this for everything else.
+
 ## Path to TestFlight
 
 1. Deploy the backend somewhere with HTTPS, if it isn't already.
 2. Enroll in the Apple Developer Program ($99/yr), if you haven't.
 3. In Xcode: confirm a unique bundle identifier (currently
    `com.danipina.germanvocabhelper` in `project.yml` — change the prefix if you
-   want a different one), and add a 1024×1024 app icon to
+   want a different one; if you do, update `APPLE_BUNDLE_ID` in `.env` to
+   match), and add a 1024×1024 app icon to
    `GermanVocabHelper/Resources/Assets.xcassets/AppIcon.appiconset` (there's a
    placeholder slot but no image yet).
 4. Product → Archive, then use the Organizer window to upload to App Store

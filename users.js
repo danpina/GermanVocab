@@ -9,6 +9,7 @@ function rowToUser(row) {
     inputLang: row.input_lang,
     outputLang: row.output_lang,
     wordsPerGame: row.words_per_game,
+    appleSub: row.apple_sub,
     createdAt: row.created_at,
   };
 }
@@ -26,18 +27,33 @@ export async function getUserById(id) {
   return result.rows[0] ? rowToUser(result.rows[0]) : null;
 }
 
+export async function getUserByAppleSub(appleSub) {
+  const result = await client.execute({
+    sql: 'SELECT * FROM users WHERE apple_sub = ?',
+    args: [appleSub],
+  });
+  return result.rows[0] ? rowToUser(result.rows[0]) : null;
+}
+
 export async function getAllUsers() {
   const result = await client.execute('SELECT * FROM users ORDER BY created_at ASC');
   return result.rows.map(rowToUser);
 }
 
-export async function createUser({ email, passwordHash, isAdmin = false, inputLang = 'DE', outputLang = 'EN' }) {
+export async function createUser({
+  email,
+  passwordHash,
+  isAdmin = false,
+  inputLang = 'DE',
+  outputLang = 'EN',
+  appleSub = null,
+}) {
   const id = newId();
   const createdAt = new Date().toISOString();
   await client.execute({
-    sql: `INSERT INTO users (id, email, password_hash, is_admin, input_lang, output_lang, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    args: [id, email, passwordHash, isAdmin ? 1 : 0, inputLang, outputLang, createdAt],
+    sql: `INSERT INTO users (id, email, password_hash, is_admin, input_lang, output_lang, apple_sub, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [id, email, passwordHash, isAdmin ? 1 : 0, inputLang, outputLang, appleSub, createdAt],
   });
   return getUserById(id);
 }
@@ -50,6 +66,7 @@ export async function updateUser(id, fields) {
     inputLang: 'input_lang',
     outputLang: 'output_lang',
     wordsPerGame: 'words_per_game',
+    appleSub: 'apple_sub',
   };
 
   const sets = [];
