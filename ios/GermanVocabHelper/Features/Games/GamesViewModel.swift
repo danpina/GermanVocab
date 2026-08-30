@@ -41,8 +41,8 @@ final class GamesViewModel: ObservableObject {
     var correctText: String {
         guard let round = currentRound else { return "" }
         switch round.mode {
-        case .multipleChoice, .typeIt: return round.word.translation
-        case .multipleChoiceReversed, .typeItReversed: return round.word.original
+        case .multipleChoice, .typeItReversed: return round.word.translation
+        case .multipleChoiceReversed, .typeIt: return round.word.original
         case .mixed: return ""
         }
     }
@@ -82,17 +82,16 @@ final class GamesViewModel: ObservableObject {
         choices = []
 
         if round.mode.isChoiceMode {
-            let showOriginal = round.mode == .multipleChoice
-            let correct = showOriginal ? round.word.translation : round.word.original
+            // Distractors must be pulled from the same field (original vs. translation)
+            // as the correct answer, or they'd be obviously-wrong-language options.
+            let usesTranslation = round.mode == .multipleChoice
             let pool = sessionWords
                 .filter { $0.id != round.word.id }
-                .map { showOriginal ? $0.translation : $0.original }
-            let distractors = Self.pickDistractors(pool: pool, correctText: correct, count: 2)
-            choices = (distractors + [correct]).shuffled()
+                .map { usesTranslation ? $0.translation : $0.original }
+            let distractors = Self.pickDistractors(pool: pool, correctText: correctText, count: 2)
+            choices = (distractors + [correctText]).shuffled()
         } else {
-            let showOriginal = round.mode == .typeItReversed
-            let correct = showOriginal ? round.word.translation : round.word.original
-            hint = Self.buildHint(correct, difficulty: round.difficulty)
+            hint = Self.buildHint(correctText, difficulty: round.difficulty)
         }
     }
 

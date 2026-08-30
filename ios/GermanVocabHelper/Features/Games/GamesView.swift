@@ -13,6 +13,15 @@ struct GamesView: View {
                 }
             }
             .navigationTitle("Games")
+            .toolbar {
+                if viewModel.phase == .playing {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Quit", role: .destructive) {
+                            viewModel.changeMode()
+                        }
+                    }
+                }
+            }
         }
     }
 }
