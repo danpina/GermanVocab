@@ -29,26 +29,24 @@ struct WordRow: View {
                 Text(word.translation).foregroundStyle(.secondary)
             }
             Spacer()
-            Button(action: onSpeak) {
-                Image(systemName: "speaker.wave.2.fill")
+            HStack(spacing: 20) {
+                Button(action: onSpeak) {
+                    Image(systemName: "speaker.wave.2.fill")
+                }
+                Button {
+                    editedOriginal = word.original
+                    editedTranslation = word.translation
+                    isEditing = true
+                } label: {
+                    Image(systemName: "pencil")
+                }
+                Button(role: .destructive) {
+                    Task { await onDelete() }
+                } label: {
+                    Image(systemName: "trash")
+                }
             }
             .buttonStyle(.borderless)
-        }
-        .contentShape(Rectangle())
-        .swipeActions(edge: .trailing) {
-            Button(role: .destructive) {
-                Task { await onDelete() }
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-            Button {
-                editedOriginal = word.original
-                editedTranslation = word.translation
-                isEditing = true
-            } label: {
-                Label("Edit", systemImage: "pencil")
-            }
-            .tint(.orange)
         }
     }
 
