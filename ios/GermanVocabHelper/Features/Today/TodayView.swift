@@ -88,6 +88,7 @@ struct TodayView: View {
                 }
             }
             .navigationTitle(title)
+            .keyboardDismissible()
             .task { await viewModel.loadTodaysWords() }
             .refreshable { await viewModel.loadTodaysWords() }
             .onReceive(speech.$transcript) { newValue in

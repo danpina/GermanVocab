@@ -45,6 +45,7 @@ struct ListsView: View {
                 }
             }
             .navigationTitle("All Lists")
+            .keyboardDismissible()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

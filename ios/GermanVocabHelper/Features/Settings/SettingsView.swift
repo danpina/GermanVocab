@@ -88,6 +88,7 @@ struct SettingsView: View {
                 Button("Cancel", role: .cancel) {}
             }
             .navigationTitle("Settings")
+            .keyboardDismissible()
             .task { viewModel.load(from: session.user) }
         }
     }

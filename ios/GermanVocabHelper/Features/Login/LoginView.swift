@@ -81,6 +81,7 @@ struct LoginView: View {
                 }
             }
             .navigationTitle("Linguanest")
+            .keyboardDismissible()
         }
     }
 

@@ -19,6 +19,7 @@ struct BulkAddView: View {
                 }
             }
             .navigationTitle("Add words in bulk")
+            .keyboardDismissible()
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {

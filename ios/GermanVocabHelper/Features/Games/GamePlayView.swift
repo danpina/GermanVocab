@@ -44,6 +44,7 @@ struct GamePlayView: View {
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
                         .disabled(viewModel.answered)
+                        .submitLabel(.done)
                         .onSubmit { viewModel.submitTyped() }
                     Button("Submit") { viewModel.submitTyped() }
                         .buttonStyle(.borderedProminent)
@@ -63,5 +64,6 @@ struct GamePlayView: View {
             }
             .padding()
         }
+        .keyboardDismissible()
     }
 }
