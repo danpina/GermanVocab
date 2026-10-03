@@ -18,6 +18,15 @@ targets:
       properties:
         CFBundleDisplayName: Vocab Helper
         UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         NSMicrophoneUsageDescription: "Vocab Helper uses the microphone so you can dictate words instead of typing them."
         NSSpeechRecognitionUsageDescription: "Vocab Helper turns what you dictate into text to save as a word."
         ITSAppUsesNonExemptEncryption: false
