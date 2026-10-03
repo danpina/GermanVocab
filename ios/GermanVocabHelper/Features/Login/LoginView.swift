@@ -80,7 +80,7 @@ struct LoginView: View {
                     }
                 }
             }
-            .navigationTitle("Vocab Helper")
+            .navigationTitle("Linguanest")
         }
     }
 

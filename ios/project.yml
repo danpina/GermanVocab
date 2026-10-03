@@ -16,7 +16,7 @@ targets:
     info:
       path: Generated/Info.plist
       properties:
-        CFBundleDisplayName: Vocab Helper
+        CFBundleDisplayName: Linguanest
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -27,8 +27,8 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        NSMicrophoneUsageDescription: "Vocab Helper uses the microphone so you can dictate words instead of typing them."
-        NSSpeechRecognitionUsageDescription: "Vocab Helper turns what you dictate into text to save as a word."
+        NSMicrophoneUsageDescription: "Linguanest uses the microphone so you can dictate words instead of typing them."
+        NSSpeechRecognitionUsageDescription: "Linguanest turns what you dictate into text to save as a word."
         ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true

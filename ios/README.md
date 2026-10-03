@@ -1,4 +1,4 @@
-# German Vocab Helper — iOS app
+# Linguanest — iOS app
 
 A native SwiftUI client for the same backend the web app uses (`server.js` at the
 repo root). It talks to the existing Express API over HTTP(S) exactly like the

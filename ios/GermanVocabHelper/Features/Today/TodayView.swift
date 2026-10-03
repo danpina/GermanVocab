@@ -7,7 +7,7 @@ struct TodayView: View {
 
     private var inputLocale: String { Languages.find(session.user?.inputLang ?? "DE").speechLocale }
     private var outputLocale: String { Languages.find(session.user?.outputLang ?? "EN").speechLocale }
-    private var title: String { "\(Languages.find(session.user?.inputLang ?? "DE").label) Vocab Helper" }
+    private let title = "Linguanest"
 
     var body: some View {
         NavigationStack {

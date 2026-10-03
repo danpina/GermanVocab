@@ -356,5 +356,5 @@ app.delete('/api/admin/users/:id', requireAdminApi, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`German Vocab Helper running at http://localhost:${PORT}`);
+  console.log(`Linguanest running at http://localhost:${PORT}`);
 });
