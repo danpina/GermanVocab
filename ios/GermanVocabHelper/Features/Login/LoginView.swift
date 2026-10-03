@@ -17,17 +17,17 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             Form {
-                if !ServerConfig.isConfigured {
-                    Section("Server") {
-                        TextField("https://your-app.example.com", text: $serverURLText)
-                            .keyboardType(.URL)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                        Text("Point this at your deployed Vocab Helper backend. In the Simulator, hitting your Mac's dev server, use http://localhost:3000.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                    }
+                #if DEBUG
+                Section("Server (debug builds only)") {
+                    TextField("https://your-app.example.com", text: $serverURLText)
+                        .keyboardType(.URL)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Text("Defaults to the production server. For a local dev server in the Simulator, use http://localhost:3000.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
+                #endif
 
                 Section {
                     Picker("Mode", selection: $mode) {

@@ -33,20 +33,20 @@ just for a new `.swift` file, only for target/setting changes).
 
 ## Pointing the app at a backend
 
-The app doesn't hardcode a server — it asks for a **Server URL** the first time
-you log in (stored on-device, editable later from Settings → Server).
+The app defaults to the production backend (`ServerConfig.productionURL`, the
+Render deployment) — Release/TestFlight builds always use it. **Debug builds**
+(⌘R from Xcode) show an extra "Server" field on the Login and Settings screens to
+override it:
 
 - **Simulator + your Mac's local dev server**: `http://localhost:3000` — the
   Simulator shares your Mac's network stack, so running `npm start` on the Mac
   and using that URL just works.
 - **A physical iPhone on the same Wi-Fi** as your dev machine: use your Mac's LAN
   IP instead of localhost, e.g. `http://192.168.1.23:3000`.
-- **Once the backend is deployed publicly** (Render, Fly.io, Railway, a VPS,
-  etc.) with HTTPS: use that URL. iOS requires HTTPS for anything that isn't
-  localhost or a private LAN address (`NSAllowsLocalNetworking` in
-  `project.yml` covers the local case), and the App Store requires HTTPS
-  outright — so a public HTTPS deployment is a prerequisite before this can
-  reach TestFlight.
+
+iOS requires HTTPS for anything that isn't localhost or a private LAN address
+(`NSAllowsLocalNetworking` in `project.yml` covers the local case), and the App
+Store requires it outright; the production URL is HTTPS.
 
 Login uses the same cookie-based session as the web app. `URLSession` stores and
 resends that cookie automatically (it survives app relaunches, same 30-day

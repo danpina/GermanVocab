@@ -46,7 +46,8 @@ struct SettingsView: View {
                     .disabled(viewModel.isSaving)
                 }
 
-                Section("Server") {
+                #if DEBUG
+                Section("Server (debug builds only)") {
                     TextField("https://your-app.example.com", text: $serverURLText)
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
@@ -55,6 +56,7 @@ struct SettingsView: View {
                         ServerConfig.baseURL = URL(string: serverURLText)
                     }
                 }
+                #endif
 
                 Section {
                     Button("Log out", role: .destructive) {
