@@ -172,6 +172,23 @@ app.patch('/api/me', requireAuthApi, async (req, res) => {
   });
 });
 
+// Self-service account deletion (required by App Store guideline 5.1.1(v) for apps
+// that let users create accounts). Removes the user's words and stats too.
+app.delete('/api/me', requireAuthApi, async (req, res) => {
+  if (req.user.isAdmin) {
+    const admins = (await getAllUsers()).filter((u) => u.isAdmin);
+    if (admins.length <= 1) {
+      return res.status(400).json({
+        error: "You're the only admin, so this account can't be deleted. Make another account an admin first.",
+      });
+    }
+  }
+
+  await deleteUser(req.user.id);
+  clearAuthCookie(res);
+  res.status(204).end();
+});
+
 // --- Translate ---
 app.post('/api/translate', requireAuthApi, async (req, res) => {
   const text = (req.body.text || '').trim();

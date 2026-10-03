@@ -54,3 +54,26 @@ settingsForm.addEventListener('submit', async (event) => {
 });
 
 loadCurrentSettings();
+
+const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+const deleteErrorEl = document.getElementById('deleteError');
+
+deleteAccountBtn.addEventListener('click', async () => {
+  if (!confirm("Permanently delete your account, saved words, and stats? This can't be undone.")) return;
+
+  deleteErrorEl.classList.add('hidden');
+  deleteAccountBtn.disabled = true;
+  try {
+    const res = await authedFetch('/api/me', { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Could not delete account');
+    }
+    window.location.href = '/login.html';
+  } catch (err) {
+    deleteErrorEl.textContent = err.message;
+    deleteErrorEl.classList.remove('hidden');
+  } finally {
+    deleteAccountBtn.disabled = false;
+  }
+});

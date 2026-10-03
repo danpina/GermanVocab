@@ -4,6 +4,8 @@ struct SettingsView: View {
     @EnvironmentObject var session: SessionStore
     @StateObject private var viewModel = SettingsViewModel()
     @State private var serverURLText = ServerConfig.baseURL?.absoluteString ?? ""
+    @State private var showingDeleteConfirm = false
+    @State private var deleteError: String?
 
     var body: some View {
         NavigationStack {
@@ -63,6 +65,27 @@ struct SettingsView: View {
                         Task { await session.logout() }
                     }
                 }
+
+                Section {
+                    Button("Delete account", role: .destructive) {
+                        showingDeleteConfirm = true
+                    }
+                    if let deleteError {
+                        Text(deleteError).foregroundStyle(.red)
+                    }
+                } footer: {
+                    Text("Permanently deletes your account, saved words, and stats.")
+                }
+            }
+            .confirmationDialog(
+                "Delete your account? This permanently removes your account, saved words, and stats. It can't be undone.",
+                isPresented: $showingDeleteConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Delete account", role: .destructive) {
+                    Task { deleteError = await session.deleteAccount() }
+                }
+                Button("Cancel", role: .cancel) {}
             }
             .navigationTitle("Settings")
             .task { viewModel.load(from: session.user) }

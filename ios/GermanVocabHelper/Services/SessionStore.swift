@@ -78,6 +78,17 @@ final class SessionStore: ObservableObject {
         }
     }
 
+    /// Permanently deletes the signed-in account (words and stats included).
+    func deleteAccount() async -> String? {
+        do {
+            try await APIClient.shared.sendNoContent("/api/me", method: .delete)
+            user = nil
+            return nil
+        } catch {
+            return error.localizedDescription
+        }
+    }
+
     func logout() async {
         try? await APIClient.shared.sendNoContent("/api/logout", method: .post)
         user = nil
