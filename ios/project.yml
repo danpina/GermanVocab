@@ -22,11 +22,6 @@ targets:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        UISupportedInterfaceOrientations~ipad:
-          - UIInterfaceOrientationPortrait
-          - UIInterfaceOrientationPortraitUpsideDown
-          - UIInterfaceOrientationLandscapeLeft
-          - UIInterfaceOrientationLandscapeRight
         NSMicrophoneUsageDescription: "Linguanest uses the microphone so you can dictate words instead of typing them."
         NSSpeechRecognitionUsageDescription: "Linguanest turns what you dictate into text to save as a word."
         ITSAppUsesNonExemptEncryption: false
@@ -43,8 +38,8 @@ targets:
         DEVELOPMENT_TEAM: RW46NLF44W
         CODE_SIGN_STYLE: Automatic
         SWIFT_VERSION: "5.0"
-        TARGETED_DEVICE_FAMILY: "1,2"
+        TARGETED_DEVICE_FAMILY: "1"
         MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "2"
+        CURRENT_PROJECT_VERSION: "3"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
