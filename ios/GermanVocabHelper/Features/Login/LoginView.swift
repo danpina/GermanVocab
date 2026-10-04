@@ -8,6 +8,12 @@ struct LoginView: View {
     @State private var password = ""
     @State private var mode: Mode = .logIn
     @State private var isSubmitting = false
+    @Environment(.colorScheme) private var colorScheme
+
+    /// Same terracotta as the website and the app icon (a lighter shade in dark mode).
+    private var brandColor: Color {
+        colorScheme == .dark ? Color(red: 0.88, green: 0.54, blue: 0.37) : Color(red: 0.64, green: 0.25, blue: 0.16)
+    }
 
     private enum Mode: String, CaseIterable {
         case logIn = "Log in"
@@ -17,6 +23,23 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    VStack(spacing: 10) {
+                        Image(systemName: "text.bubble.fill")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.white)
+                            .frame(width: 84, height: 84)
+                            .background(brandColor.gradient, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        Text("Linguanest")
+                            .font(.largeTitle.bold())
+                        Text("Save, hear & practice words")
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                }
+                .listRowBackground(Color.clear)
+
                 #if DEBUG
                 Section("Server (debug builds only)") {
                     TextField("https://your-app.example.com", text: $serverURLText)
@@ -57,20 +80,34 @@ struct LoginView: View {
                     Button {
                         Task { await submit() }
                     } label: {
-                        if isSubmitting {
-                            ProgressView()
-                        } else {
-                            Text(mode == .logIn ? "Log in" : "Create account")
+                        Group {
+                            if isSubmitting {
+                                ProgressView().tint(.white)
+                            } else {
+                                Text(mode == .logIn ? "Log in" : "Create account")
+                            }
                         }
+                        .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(brandColor)
                     .disabled(isSubmitting || email.isEmpty || password.isEmpty || serverURLText.isEmpty)
+                    .listRowInsets(EdgeInsets())
+
+                    if isSubmitting {
+                        WakeHint()
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                    }
                 }
+                .listRowBackground(Color.clear)
 
                 Section {
                     SignInWithAppleButton(.signIn, onRequest: { request in
                         request.requestedScopes = [.email]
                     }, onCompletion: handleAppleCompletion)
-                    .signInWithAppleButtonStyle(.black)
+                    .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
                     .frame(height: 44)
                     .listRowInsets(EdgeInsets())
                     .disabled(serverURLText.isEmpty)
@@ -80,7 +117,7 @@ struct LoginView: View {
                     }
                 }
             }
-            .navigationTitle("Linguanest")
+            .toolbar(.hidden, for: .navigationBar)
             .keyboardDismissible()
         }
     }

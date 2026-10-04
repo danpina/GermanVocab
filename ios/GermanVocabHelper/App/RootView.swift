@@ -6,7 +6,10 @@ struct RootView: View {
     var body: some View {
         Group {
             if session.isCheckingSession {
-                ProgressView()
+                VStack(spacing: 12) {
+                    ProgressView()
+                    WakeHint().padding(.horizontal)
+                }
             } else if session.user != nil {
                 MainTabView()
             } else {
