@@ -13,8 +13,8 @@ struct TodayView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextEditor(text: $viewModel.inputText)
-                        .frame(minHeight: 90)
+                    TextField("Type a word or sentence…", text: $viewModel.inputText, axis: .vertical)
+                        .lineLimit(1...4)
 
                     HStack {
                         Button {
