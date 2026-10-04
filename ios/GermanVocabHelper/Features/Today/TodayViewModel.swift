@@ -40,6 +40,12 @@ final class TodayViewModel: ObservableObject {
         }
     }
 
+    func clearInput() {
+        inputText = ""
+        translation = ""
+        errorMessage = nil
+    }
+
     func save() async {
         let original = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !original.isEmpty, !translation.isEmpty else { return }

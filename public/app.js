@@ -1,6 +1,7 @@
 const input = document.getElementById('input');
 const micBtn = document.getElementById('micBtn');
 const speakBtn = document.getElementById('speakBtn');
+const clearBtn = document.getElementById('clearBtn');
 const translateBtn = document.getElementById('translateBtn');
 const result = document.getElementById('result');
 const translationText = document.getElementById('translationText');
@@ -31,6 +32,7 @@ speakTranslationBtn.addEventListener('click', () => speak(currentTranslation, ou
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null;
 let listening = false;
+let discardResults = false; // set when the box is cleared mid-dictation, so late results can't refill it
 
 if (!SpeechRecognition) {
   micBtn.disabled = true;
@@ -46,6 +48,7 @@ function startListening() {
   recognition.interimResults = true;
 
   recognition.addEventListener('result', (event) => {
+    if (discardResults) return;
     let transcript = '';
     for (let i = 0; i < event.results.length; i++) {
       transcript += event.results[i][0].transcript;
@@ -65,6 +68,7 @@ function startListening() {
   });
 
   clearError();
+  discardResults = false;
   recognition.start();
   listening = true;
   micBtn.textContent = '⏹ Stop listening';
@@ -78,6 +82,25 @@ micBtn.addEventListener('click', () => {
   } else {
     startListening();
   }
+});
+
+// Empties the box and any pending translation. Dictation is aborted too: otherwise
+// it keeps writing the whole spoken text back into the box (a final result is even
+// delivered after stop()), so the old word would reappear.
+function resetInput() {
+  if (listening && recognition) {
+    discardResults = true;
+    recognition.abort();
+  }
+  input.value = '';
+  result.classList.add('hidden');
+  currentTranslation = '';
+  clearError();
+}
+
+clearBtn.addEventListener('click', () => {
+  resetInput();
+  input.focus();
 });
 
 translateBtn.addEventListener('click', async () => {
@@ -123,9 +146,7 @@ saveBtn.addEventListener('click', async () => {
     });
     if (!res.ok) throw new Error('Could not save entry');
 
-    input.value = '';
-    result.classList.add('hidden');
-    currentTranslation = '';
+    resetInput();
     await loadWords();
   } catch (err) {
     showError(err.message);

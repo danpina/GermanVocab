@@ -33,6 +33,14 @@ final class SpeechService: NSObject, ObservableObject {
         }
     }
 
+    /// Stops dictation and forgets what was heard. Used when the input is cleared or
+    /// saved: otherwise a still-running recognizer keeps re-sending the full
+    /// transcript and the old text pops back into the box.
+    func reset() {
+        stopDictation()
+        transcript = ""
+    }
+
     private func startDictation(locale: String) {
         dictationError = nil
         SFSpeechRecognizer.requestAuthorization { [weak self] status in
@@ -87,7 +95,8 @@ final class SpeechService: NSObject, ObservableObject {
         recognitionTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
             Task { @MainActor in
                 guard let self else { return }
-                if let result {
+                // Ignore stragglers that arrive after dictation was stopped or reset.
+                if let result, self.isListening {
                     self.transcript = result.bestTranscription.formattedString
                 }
                 if error != nil || (result?.isFinal ?? false) {

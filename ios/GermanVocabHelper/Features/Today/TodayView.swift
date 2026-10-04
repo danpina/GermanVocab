@@ -27,11 +27,20 @@ struct TodayView: View {
                         }
                         Spacer()
                         Button {
+                            speech.reset()
+                            viewModel.clearInput()
+                        } label: {
+                            Label("Clear", systemImage: "xmark.circle")
+                        }
+                        .disabled(viewModel.inputText.isEmpty && viewModel.translation.isEmpty)
+                        Spacer()
+                        Button {
                             speech.speak(viewModel.inputText, locale: inputLocale)
                         } label: {
                             Label("Hear it", systemImage: "speaker.wave.2")
                         }
                     }
+                    .buttonStyle(.borderless)
 
                     if let dictationError = speech.dictationError {
                         Text(dictationError).foregroundStyle(.red).font(.footnote)
@@ -60,9 +69,12 @@ struct TodayView: View {
                             }
                             Spacer()
                             Button("Save to list") {
+                                // Stop dictation first so it can't refill the box after the save.
+                                speech.reset()
                                 Task { await viewModel.save() }
                             }
                         }
+                        .buttonStyle(.borderless)
                     }
                 }
 
