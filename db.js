@@ -52,6 +52,11 @@ async function init() {
     );
   }
 
+  // Kept so the Apple token can be revoked if the account is deleted.
+  if (!(await columnExists('users', 'apple_refresh_token'))) {
+    await client.execute('ALTER TABLE users ADD COLUMN apple_refresh_token TEXT');
+  }
+
   await client.execute(`
     CREATE TABLE IF NOT EXISTS words (
       id TEXT PRIMARY KEY,

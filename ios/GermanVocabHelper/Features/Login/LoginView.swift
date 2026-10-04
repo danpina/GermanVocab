@@ -109,7 +109,10 @@ struct LoginView: View {
                 session.errorMessage = "Couldn't read the Apple credential."
                 return
             }
-            Task { _ = await session.loginWithApple(identityToken: token, email: credential.email) }
+            let code = credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }
+            Task {
+                _ = await session.loginWithApple(identityToken: token, authorizationCode: code, email: credential.email)
+            }
         case .failure(let error):
             session.errorMessage = error.localizedDescription
         }

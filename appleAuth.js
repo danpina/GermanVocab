@@ -49,3 +49,62 @@ export async function verifyAppleIdentityToken(identityToken) {
     audience,
   });
 }
+
+// --- Token revocation (App Store guideline 5.1.1(v)) ---
+// When someone who signed in with Apple deletes their account, Apple expects us to
+// revoke the token we got at sign-in. That needs a client secret signed with a
+// Sign in with Apple key from the developer portal; until those env vars are set,
+// revocation is simply skipped.
+
+export function isAppleRevocationConfigured() {
+  return Boolean(
+    process.env.APPLE_BUNDLE_ID &&
+      process.env.APPLE_TEAM_ID &&
+      process.env.APPLE_KEY_ID &&
+      process.env.APPLE_PRIVATE_KEY
+  );
+}
+
+function createClientSecret() {
+  const privateKey = process.env.APPLE_PRIVATE_KEY.replace(/\n/g, '\n');
+  return jwt.sign({}, privateKey, {
+    algorithm: 'ES256',
+    expiresIn: '10m',
+    audience: APPLE_ISSUER,
+    issuer: process.env.APPLE_TEAM_ID,
+    subject: process.env.APPLE_BUNDLE_ID,
+    keyid: process.env.APPLE_KEY_ID,
+  });
+}
+
+async function postToApple(path, fields) {
+  const body = new URLSearchParams({
+    client_id: process.env.APPLE_BUNDLE_ID,
+    client_secret: createClientSecret(),
+    ...fields,
+  });
+  const response = await fetch(`${APPLE_ISSUER}/auth/${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  if (!response.ok) {
+    throw new Error(`Apple /auth/${path} failed (${response.status}): ${await response.text()}`);
+  }
+  return response;
+}
+
+/// Trades the one-time authorization code from the iOS sign-in for a long-lived
+/// refresh token, which is what we keep so we can revoke it later.
+export async function exchangeAppleAuthorizationCode(authorizationCode) {
+  const response = await postToApple('token', {
+    grant_type: 'authorization_code',
+    code: authorizationCode,
+  });
+  const { refresh_token: refreshToken } = await response.json();
+  return refreshToken;
+}
+
+export async function revokeAppleRefreshToken(refreshToken) {
+  await postToApple('revoke', { token: refreshToken, token_type_hint: 'refresh_token' });
+}

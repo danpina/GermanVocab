@@ -10,6 +10,7 @@ function rowToUser(row) {
     outputLang: row.output_lang,
     wordsPerGame: row.words_per_game,
     appleSub: row.apple_sub,
+    appleRefreshToken: row.apple_refresh_token,
     createdAt: row.created_at,
   };
 }
@@ -67,6 +68,7 @@ export async function updateUser(id, fields) {
     outputLang: 'output_lang',
     wordsPerGame: 'words_per_game',
     appleSub: 'apple_sub',
+    appleRefreshToken: 'apple_refresh_token',
   };
 
   const sets = [];

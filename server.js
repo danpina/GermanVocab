@@ -18,7 +18,12 @@ import { getAllWords, addWord, addWords, updateWord, deleteWord, deleteWordsByDa
 import { LANGUAGES, getLanguage } from './languages.js';
 import { getGameWords, recordGameResult } from './games.js';
 import { getWordStats, resetWordStats } from './stats.js';
-import { verifyAppleIdentityToken } from './appleAuth.js';
+import {
+  verifyAppleIdentityToken,
+  isAppleRevocationConfigured,
+  exchangeAppleAuthorizationCode,
+  revokeAppleRefreshToken,
+} from './appleAuth.js';
 import crypto from 'crypto';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -103,7 +108,7 @@ app.post('/api/register', async (req, res) => {
 });
 
 app.post('/api/auth/apple', async (req, res) => {
-  const { identityToken, email: providedEmail } = req.body;
+  const { identityToken, authorizationCode, email: providedEmail } = req.body;
   if (!identityToken) return res.status(400).json({ error: 'identityToken is required' });
 
   let claims;
@@ -131,6 +136,17 @@ app.post('/api/auth/apple', async (req, res) => {
         passwordHash: await hashPassword(placeholderPassword),
         appleSub,
       });
+    }
+  }
+
+  // Keep Apple's refresh token so it can be revoked if this account is deleted.
+  // Best effort: a failure here must never block signing in.
+  if (authorizationCode && isAppleRevocationConfigured()) {
+    try {
+      const appleRefreshToken = await exchangeAppleAuthorizationCode(authorizationCode);
+      if (appleRefreshToken) await updateUser(user.id, { appleRefreshToken });
+    } catch (err) {
+      console.error('Could not store Apple refresh token:', err.message);
     }
   }
 
@@ -181,6 +197,14 @@ app.delete('/api/me', requireAuthApi, async (req, res) => {
       return res.status(400).json({
         error: "You're the only admin, so this account can't be deleted. Make another account an admin first.",
       });
+    }
+  }
+
+  if (req.user.appleRefreshToken && isAppleRevocationConfigured()) {
+    try {
+      await revokeAppleRefreshToken(req.user.appleRefreshToken);
+    } catch (err) {
+      console.error('Could not revoke Apple token:', err.message);
     }
   }
 

@@ -62,13 +62,17 @@ final class SessionStore: ObservableObject {
         }
     }
 
-    func loginWithApple(identityToken: String, email: String?) async -> Bool {
+    func loginWithApple(identityToken: String, authorizationCode: String?, email: String?) async -> Bool {
         errorMessage = nil
         do {
-            struct AppleBody: Encodable { let identityToken: String; let email: String? }
+            struct AppleBody: Encodable {
+                let identityToken: String
+                let authorizationCode: String?
+                let email: String?
+            }
             let _: LoginResponse = try await APIClient.shared.send(
                 "/api/auth/apple", method: .post,
-                body: AppleBody(identityToken: identityToken, email: email)
+                body: AppleBody(identityToken: identityToken, authorizationCode: authorizationCode, email: email)
             )
             await refreshMe()
             return user != nil
