@@ -54,6 +54,7 @@ function startListening() {
       transcript += event.results[i][0].transcript;
     }
     input.value = transcript;
+    autoGrow();
   });
 
   recognition.addEventListener('error', (event) => {
@@ -93,10 +94,19 @@ function resetInput() {
     recognition.abort();
   }
   input.value = '';
+  autoGrow();
   result.classList.add('hidden');
   currentTranslation = '';
   clearError();
 }
+
+// The box starts as a single row and grows (up to a limit) as longer text goes in.
+function autoGrow() {
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight + 2, 160) + 'px';
+}
+input.addEventListener('input', autoGrow);
+autoGrow();
 
 clearBtn.addEventListener('click', () => {
   resetInput();
