@@ -87,6 +87,36 @@ membership (the free tier can't provision it):
    the Sign In with Apple button will fail — email/password login and sign-up
    work regardless, so you're not blocked on this for everything else.
 
+## Building and releasing from GitHub (no Mac needed)
+
+Two workflows in `.github/workflows/` use GitHub's Mac machines (free for public repos):
+
+- **iOS build check** runs automatically when anything under `ios/` is pushed. It
+  compiles the Debug (simulator) and Release (device) builds and shows compiler errors
+  in the run's *Annotations*. No setup needed.
+- **iOS release (TestFlight)** is a button: *Actions → iOS release (TestFlight) → Run
+  workflow*. It archives, signs and uploads straight to App Store Connect.
+
+One-time setup for the release button (about 10 minutes):
+
+1. Open [App Store Connect](https://appstoreconnect.apple.com) → **Users and Access →
+   Integrations → App Store Connect API → Team Keys**, click **+**, name it "GitHub CI",
+   choose access **Admin**, and generate it.
+2. Download the `.p8` file (Apple lets you do this only once) and note the **Key ID**
+   (next to the key) and the **Issuer ID** (at the top of the page).
+3. On GitHub: repository **Settings → Secrets and variables → Actions → New repository
+   secret**, and add three secrets:
+   - `ASC_KEY_ID`: the Key ID
+   - `ASC_ISSUER_ID`: the Issuer ID
+   - `ASC_KEY_P8`: the entire contents of the `.p8` file (open it in a text editor,
+     including the `-----BEGIN PRIVATE KEY-----` lines)
+4. Run the workflow. Leave the build number empty to use 100 + the run number, which
+   is always higher than anything uploaded before.
+
+The workflow uses automatic signing with that API key, so Apple creates and renews the
+certificates and profiles itself. Bump `MARKETING_VERSION` in `project.yml` whenever you
+ship a new App Store version (the build number is handled automatically).
+
 ## Path to TestFlight
 
 1. Deploy the backend somewhere with HTTPS, if it isn't already.

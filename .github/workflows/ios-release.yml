@@ -1,0 +1,96 @@
+name: iOS release (TestFlight)
+
+# Manual button: GitHub → Actions → "iOS release (TestFlight)" → Run workflow.
+# Builds, signs and uploads the app to App Store Connect, replacing the rented-Mac routine.
+#
+# Needs three repository secrets (Settings → Secrets and variables → Actions):
+#   ASC_KEY_ID      Key ID of an App Store Connect API key (Admin access)
+#   ASC_ISSUER_ID   the Issuer ID shown above the keys list
+#   ASC_KEY_P8      the full text of the downloaded AuthKey_XXXX.p8 file
+# See ios/README.md for the click-by-click setup.
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: 'Build number (leave empty to use 100 + this run number)'
+        required: false
+        default: ''
+
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 45
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - name: Check the secrets are set
+        run: |
+          missing=0
+          for name in ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8; do
+            if [ -z "${!name}" ]; then echo "::error::Repository secret $name is not set"; missing=1; fi
+          done
+          exit $missing
+
+      - uses: actions/checkout@v4
+
+      - name: Select the newest Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+
+      - name: Install XcodeGen and generate the project
+        working-directory: ios
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Install the App Store Connect API key
+        run: |
+          mkdir -p ~/private_keys
+          printf '%s\n' "$ASC_KEY_P8" > ~/private_keys/AuthKey_${ASC_KEY_ID}.p8
+
+      - name: Archive
+        working-directory: ios
+        run: |
+          set -o pipefail
+          BUILD_NUMBER="${{ github.event.inputs.build_number }}"
+          [ -z "$BUILD_NUMBER" ] && BUILD_NUMBER=$((100 + GITHUB_RUN_NUMBER))
+          echo "Build number: $BUILD_NUMBER"
+          xcodebuild archive \
+            -project GermanVocabHelper.xcodeproj -scheme GermanVocabHelper \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/Linguanest.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" 2>&1 | tee "$RUNNER_TEMP/archive.log" | tail -n 40
+
+      - name: Sign and upload to App Store Connect
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Linguanest.xcarchive" \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" 2>&1 | tee "$RUNNER_TEMP/export.log" | tail -n 40
+
+      - name: Report errors
+        if: failure()
+        run: |
+          for log in "$RUNNER_TEMP/archive.log" "$RUNNER_TEMP/export.log"; do
+            [ -f "$log" ] && grep -E "error:|Error Domain|ERROR" "$log" | sort -u | head -n 15 | while read -r line; do
+              echo "::error::$line"
+            done
+          done
+
+      - name: Remove the API key
+        if: always()
+        run: rm -f ~/private_keys/AuthKey_*.p8
