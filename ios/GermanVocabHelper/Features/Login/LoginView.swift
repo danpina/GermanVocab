@@ -8,7 +8,7 @@ struct LoginView: View {
     @State private var password = ""
     @State private var mode: Mode = .logIn
     @State private var isSubmitting = false
-    @Environment(.colorScheme) private var colorScheme
+    @Environment(\.colorScheme) private var colorScheme
 
     /// Same terracotta as the website and the app icon (a lighter shade in dark mode).
     private var brandColor: Color {
@@ -119,6 +119,7 @@ struct LoginView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
             .keyboardDismissible()
+            .onChange(of: mode) { _ in session.errorMessage = nil }
         }
     }
 
@@ -126,11 +127,13 @@ struct LoginView: View {
         ServerConfig.baseURL = URL(string: serverURLText)
         isSubmitting = true
         defer { isSubmitting = false }
+        // Autofill and keyboards like to add a trailing space; the account lookup is exact.
+        let cleanEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
         switch mode {
         case .logIn:
-            _ = await session.login(email: email, password: password)
+            _ = await session.login(email: cleanEmail, password: password)
         case .signUp:
-            _ = await session.register(email: email, password: password)
+            _ = await session.register(email: cleanEmail, password: password)
         }
     }
 
@@ -148,9 +151,11 @@ struct LoginView: View {
             }
             let code = credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) }
             Task {
-                _ = await session.loginWithApple(identityToken: token, authorizationCode: code, email: credential.email)
+                _ = await session.loginWithApple(identityToken: token, authorizationCode: code)
             }
         case .failure(let error):
+            // Closing the Apple sheet isn't an error worth showing.
+            if (error as? ASAuthorizationError)?.code == .canceled { return }
             session.errorMessage = error.localizedDescription
         }
     }

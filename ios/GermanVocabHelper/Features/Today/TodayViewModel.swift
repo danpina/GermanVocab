@@ -50,10 +50,10 @@ final class TodayViewModel: ObservableObject {
         let original = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !original.isEmpty, !translation.isEmpty else { return }
         do {
-            struct Body: Encodable { let original: String; let translation: String }
+            struct Body: Encodable { let original: String; let translation: String; let date: String }
             let _: Word = try await APIClient.shared.send(
                 "/api/words", method: .post,
-                body: Body(original: original, translation: translation)
+                body: Body(original: original, translation: translation, date: DateKey.today())
             )
             inputText = ""
             translation = ""

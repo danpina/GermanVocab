@@ -21,8 +21,25 @@ final class SpeechService: NSObject, ObservableObject {
         guard !trimmed.isEmpty else { return }
         let utterance = AVSpeechUtterance(string: trimmed)
         utterance.voice = AVSpeechSynthesisVoice(language: locale)
+        prepareAudioSessionForSpeech()
         synthesizer.stopSpeaking(at: .immediate)
         synthesizer.speak(utterance)
+    }
+
+    /// Plays like a podcast or audiobook app: speech is audible even with the ring/silent
+    /// switch on, and music is lowered only while a word is being read.
+    private func prepareAudioSessionForSpeech() {
+        if synthesizer.delegate == nil { synthesizer.delegate = self }
+        guard !isListening else { return } // dictation already configured the session
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+        try? session.setActive(true)
+    }
+
+    /// Hands audio back (un-ducks other apps) once neither speaking nor listening.
+    private func releaseAudioSessionIfIdle() {
+        guard !isListening, !synthesizer.isSpeaking else { return }
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
     func toggleDictation(locale: String) {
@@ -115,5 +132,18 @@ final class SpeechService: NSObject, ObservableObject {
         recognitionRequest = nil
         recognitionTask = nil
         isListening = false
+        releaseAudioSessionIfIdle()
+    }
+}
+
+extension SpeechService: AVSpeechSynthesizerDelegate {
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor in self.releaseAudioSessionIfIdle() }
+    }
+
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        // Starting a new utterance cancels the old one first; releaseAudioSessionIfIdle
+        // checks isSpeaking, so it won't cut the new one off.
+        Task { @MainActor in self.releaseAudioSessionIfIdle() }
     }
 }

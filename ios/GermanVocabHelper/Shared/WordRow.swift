@@ -32,6 +32,7 @@ struct WordRow: View {
             HStack(spacing: 20) {
                 Button(action: onSpeak) {
                     Image(systemName: "speaker.wave.2.fill")
+                        .accessibilityLabel("Read \(word.original) aloud")
                 }
                 Button {
                     editedOriginal = word.original
@@ -39,11 +40,13 @@ struct WordRow: View {
                     isEditing = true
                 } label: {
                     Image(systemName: "pencil")
+                        .accessibilityLabel("Edit \(word.original)")
                 }
                 Button(role: .destructive) {
                     Task { await onDelete() }
                 } label: {
                     Image(systemName: "trash")
+                        .accessibilityLabel("Delete \(word.original)")
                 }
             }
             .buttonStyle(.borderless)

@@ -6,6 +6,9 @@ final class SessionStore: ObservableObject {
     @Published var user: User?
     @Published var isCheckingSession = true
     @Published var errorMessage: String?
+    /// Set when the server couldn't be reached while checking the session. Distinct
+    /// from being signed out: the saved login may be perfectly valid.
+    @Published var connectionError: String?
 
     init() {
         APIClient.shared.onUnauthorized = { [weak self] in
@@ -14,10 +17,7 @@ final class SessionStore: ObservableObject {
     }
 
     func bootstrap() async {
-        guard ServerConfig.isConfigured else {
-            isCheckingSession = false
-            return
-        }
+        isCheckingSession = true
         await refreshMe()
         isCheckingSession = false
     }
@@ -25,8 +25,14 @@ final class SessionStore: ObservableObject {
     func refreshMe() async {
         do {
             user = try await APIClient.shared.send("/api/me", method: .get)
-        } catch {
+            connectionError = nil
+        } catch let error as APIError where error.isUnauthorized {
             user = nil
+            connectionError = nil
+        } catch {
+            // Offline, timeout, server error: keep whatever we had instead of
+            // pretending the user was signed out.
+            connectionError = error.localizedDescription
         }
     }
 
@@ -38,8 +44,7 @@ final class SessionStore: ObservableObject {
                 "/api/login", method: .post,
                 body: LoginBody(email: email, password: password)
             )
-            await refreshMe()
-            return user != nil
+            return await finishSignIn()
         } catch {
             errorMessage = error.localizedDescription
             return false
@@ -54,32 +59,38 @@ final class SessionStore: ObservableObject {
                 "/api/register", method: .post,
                 body: RegisterBody(email: email, password: password)
             )
-            await refreshMe()
-            return user != nil
+            return await finishSignIn()
         } catch {
             errorMessage = error.localizedDescription
             return false
         }
     }
 
-    func loginWithApple(identityToken: String, authorizationCode: String?, email: String?) async -> Bool {
+    func loginWithApple(identityToken: String, authorizationCode: String?) async -> Bool {
         errorMessage = nil
         do {
             struct AppleBody: Encodable {
                 let identityToken: String
                 let authorizationCode: String?
-                let email: String?
             }
             let _: LoginResponse = try await APIClient.shared.send(
                 "/api/auth/apple", method: .post,
-                body: AppleBody(identityToken: identityToken, authorizationCode: authorizationCode, email: email)
+                body: AppleBody(identityToken: identityToken, authorizationCode: authorizationCode)
             )
-            await refreshMe()
-            return user != nil
+            return await finishSignIn()
         } catch {
             errorMessage = error.localizedDescription
             return false
         }
+    }
+
+    /// After the server accepts the credentials, load the full profile.
+    private func finishSignIn() async -> Bool {
+        await refreshMe()
+        if user == nil {
+            errorMessage = connectionError ?? "Couldn't load your account. Please try again."
+        }
+        return user != nil
     }
 
     /// Permanently deletes the signed-in account (words and stats included).

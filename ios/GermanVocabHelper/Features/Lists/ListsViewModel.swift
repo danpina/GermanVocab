@@ -65,11 +65,11 @@ final class ListsViewModel: ObservableObject {
         defer { isBulkAdding = false }
         do {
             struct Entry: Encodable { let original: String; let translation: String }
-            struct Body: Encodable { let words: [Entry] }
+            struct Body: Encodable { let words: [Entry]; let date: String }
             struct Response: Decodable { let added: Int; let skipped: Int }
             let response: Response = try await APIClient.shared.send(
                 "/api/words/bulk", method: .post,
-                body: Body(words: parsed.words.map { Entry(original: $0.original, translation: $0.translation) })
+                body: Body(words: parsed.words.map { Entry(original: $0.original, translation: $0.translation) }, date: DateKey.today())
             )
             var message = "Added \(response.added) word\(response.added == 1 ? "" : "s")."
             if !parsed.invalidLines.isEmpty {

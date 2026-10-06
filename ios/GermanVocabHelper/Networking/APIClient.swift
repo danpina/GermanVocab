@@ -15,11 +15,16 @@ final class APIClient {
         case delete = "DELETE"
     }
 
-    /// Fires whenever a request comes back 401, so the app can drop back to the login screen.
+    /// Fires when a request made *while signed in* is rejected as unauthenticated, so
+    /// the app can drop back to the login screen.
     var onUnauthorized: (() -> Void)?
 
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+
+    /// The free hosting plan sleeps when idle and can take close to a minute to wake,
+    /// so the default 60 seconds is too tight for the first request after a quiet spell.
+    private static let requestTimeout: TimeInterval = 120
 
     private func makeRequest(
         _ path: String,
@@ -42,6 +47,7 @@ final class APIClient {
 
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
+        request.timeoutInterval = Self.requestTimeout
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if let body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -58,9 +64,12 @@ final class APIClient {
         query: [String: String]? = nil
     ) async throws -> Response {
         let request = try makeRequest(path, method: method, body: body, query: query)
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try validate(response, data: data)
-        return try decoder.decode(Response.self, from: data)
+        let data = try await perform(request, path: path)
+        do {
+            return try decoder.decode(Response.self, from: data)
+        } catch {
+            throw APIError(message: "The server sent an unexpected response. Please try again.")
+        }
     }
 
     func sendNoContent(
@@ -70,23 +79,52 @@ final class APIClient {
         query: [String: String]? = nil
     ) async throws {
         let request = try makeRequest(path, method: method, body: body, query: query)
-        let (data, response) = try await URLSession.shared.data(for: request)
-        try validate(response, data: data)
+        _ = try await perform(request, path: path)
     }
 
-    private func validate(_ response: URLResponse, data: Data) throws {
+    private func perform(_ request: URLRequest, path: String) async throws -> Data {
+        let result: (Data, URLResponse)
+        do {
+            result = try await URLSession.shared.data(for: request)
+        } catch let error as URLError where error.code != .cancelled {
+            throw APIError(message: Self.friendlyMessage(for: error))
+        }
+        let (data, response) = result
+        try validate(response, data: data, path: path)
+        return data
+    }
+
+    private static func friendlyMessage(for error: URLError) -> String {
+        switch error.code {
+        case .notConnectedToInternet, .dataNotAllowed, .networkConnectionLost, .internationalRoamingOff:
+            return "You're offline. Check your connection and try again."
+        case .timedOut:
+            return "The server took too long to respond. Please try again."
+        case .cannotFindHost, .cannotConnectToHost, .dnsLookupFailed, .secureConnectionFailed:
+            return "Can't reach the server right now. Please try again in a moment."
+        default:
+            return error.localizedDescription
+        }
+    }
+
+    private func validate(_ response: URLResponse, data: Data, path: String) throws {
         guard let http = response as? HTTPURLResponse else {
             throw APIError(message: "No response from server.")
         }
+
+        let serverMessage = (try? decoder.decode(ServerErrorBody.self, from: data))?.error
+
         if http.statusCode == 401 {
-            onUnauthorized?()
-            throw APIError(message: "Not logged in")
+            // A 401 from the sign-in endpoints just means the credentials were wrong:
+            // show the server's message ("Incorrect email/ID or password") and don't
+            // treat it as an expired session.
+            let isSignInEndpoint = path.hasPrefix("/api/login") || path.hasPrefix("/api/register") || path.hasPrefix("/api/auth/")
+            if !isSignInEndpoint { onUnauthorized?() }
+            throw APIError(message: serverMessage ?? "Please log in again.", isUnauthorized: !isSignInEndpoint)
         }
+
         guard (200...299).contains(http.statusCode) else {
-            if let decoded = try? decoder.decode(ServerErrorBody.self, from: data) {
-                throw APIError(message: decoded.error)
-            }
-            throw APIError(message: "Request failed (\(http.statusCode)).")
+            throw APIError(message: serverMessage ?? "Request failed (\(http.statusCode)).")
         }
     }
 }

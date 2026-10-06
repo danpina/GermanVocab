@@ -27,6 +27,7 @@ struct StatsView: View {
                                 Text("✓\(stat.correctCount) ✗\(stat.incorrectCount)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
+                                    .accessibilityLabel("\(stat.correctCount) correct, \(stat.incorrectCount) incorrect")
                             }
                         }
                     }

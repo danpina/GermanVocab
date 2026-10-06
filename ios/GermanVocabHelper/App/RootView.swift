@@ -12,11 +12,39 @@ struct RootView: View {
                 }
             } else if session.user != nil {
                 MainTabView()
+            } else if let message = session.connectionError {
+                ConnectionErrorView(message: message) {
+                    Task { await session.bootstrap() }
+                }
             } else {
                 LoginView()
             }
         }
         .task { await session.bootstrap() }
+    }
+}
+
+/// Shown when the saved session couldn't be checked because the server was unreachable,
+/// so a slow or sleeping server doesn't look like being logged out.
+struct ConnectionErrorView: View {
+    let message: String
+    let retry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "wifi.exclamationmark")
+                .font(.system(size: 44))
+                .foregroundStyle(.secondary)
+            Text("Can't reach Linguanest")
+                .font(.title2.bold())
+            Text(message)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+            Button("Try again", action: retry)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+        }
+        .padding(32)
     }
 }
 

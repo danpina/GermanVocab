@@ -28,12 +28,13 @@ struct ListsView: View {
                             }
 
                             HStack {
-                                if let url = CSVExport.writeTempFile(CSVExport.csv(for: group.words), filename: "linguanest-\(group.key).csv") {
-                                    ShareLink(item: url) {
-                                        Label("Export this day", systemImage: "square.and.arrow.up")
-                                    }
-                                    .buttonStyle(.borderless)
+                                ShareLink(
+                                    item: CSVFile(text: CSVExport.csv(for: group.words), filename: "linguanest-\(group.key).csv"),
+                                    preview: SharePreview("linguanest-\(group.key).csv")
+                                ) {
+                                    Label("Export this day", systemImage: "square.and.arrow.up")
                                 }
+                                .buttonStyle(.borderless)
                                 Spacer()
                                 Button(role: .destructive) {
                                     dayToDelete = group
@@ -63,13 +64,17 @@ struct ListsView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityLabel("Add words in bulk")
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    if let url = CSVExport.writeTempFile(CSVExport.csv(for: viewModel.allWords), filename: "linguanest-all.csv") {
-                        ShareLink(item: url) {
-                            Image(systemName: "square.and.arrow.up")
-                        }
+                    ShareLink(
+                        item: CSVFile(text: CSVExport.csv(for: viewModel.allWords), filename: "linguanest-all.csv"),
+                        preview: SharePreview("linguanest-all.csv")
+                    ) {
+                        Image(systemName: "square.and.arrow.up")
                     }
+                    .accessibilityLabel("Export all words")
+                    .disabled(viewModel.allWords.isEmpty)
                 }
             }
             .sheet(isPresented: $showingBulkAdd) {

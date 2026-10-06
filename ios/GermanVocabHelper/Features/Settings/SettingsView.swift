@@ -28,6 +28,10 @@ struct SettingsView: View {
                     }
                 }
 
+                if viewModel.inputLang == viewModel.outputLang {
+                    Text("Pick two different languages: the one you're learning and the one to translate into.")
+                        .foregroundStyle(.orange)
+                }
                 if let error = viewModel.errorMessage {
                     Text(error).foregroundStyle(.red)
                 }
@@ -45,7 +49,7 @@ struct SettingsView: View {
                             Text("Save")
                         }
                     }
-                    .disabled(viewModel.isSaving)
+                    .disabled(viewModel.isSaving || viewModel.inputLang == viewModel.outputLang)
                 }
 
                 #if DEBUG

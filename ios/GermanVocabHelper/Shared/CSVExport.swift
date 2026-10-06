@@ -1,6 +1,8 @@
+import CoreTransferable
 import Foundation
+import UniformTypeIdentifiers
 
-/// Mirrors wordsToCsv()/downloadCsv() in the web app's common.js.
+/// Mirrors wordsToCsv() in the web app's common.js.
 enum CSVExport {
     static func csv(for words: [Word]) -> String {
         var rows = [["Original", "Translation", "Saved at"]]
@@ -13,16 +15,19 @@ enum CSVExport {
     private static func quote(_ field: String) -> String {
         "\"\(field.replacingOccurrences(of: "\"", with: "\"\""))\""
     }
+}
 
-    /// Writes CSV text to a temp file so ShareLink can offer it as a real .csv
-    /// file (with the right filename) instead of plain text.
-    static func writeTempFile(_ text: String, filename: String) -> URL? {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
-        do {
-            try text.write(to: url, atomically: true, encoding: .utf8)
-            return url
-        } catch {
-            return nil
+/// A CSV the share sheet turns into a real .csv file. The file is only written when the
+/// user actually taps share — not every time the Lists screen redraws.
+struct CSVFile: Transferable {
+    let text: String
+    let filename: String
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .commaSeparatedText) { file in
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent(file.filename)
+            try file.text.write(to: url, atomically: true, encoding: .utf8)
+            return SentTransferredFile(url)
         }
     }
 }
