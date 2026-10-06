@@ -6,7 +6,7 @@ export async function getWordStats(userId) {
       SELECT w.id, w.original, w.translation, w.input_lang, w.output_lang,
              s.correct_count, s.incorrect_count, s.last_seen_at
       FROM word_stats s
-      JOIN words w ON w.id = s.word_id
+      JOIN words w ON w.id = s.word_id AND w.user_id = s.user_id
       WHERE s.user_id = ?
     `,
     args: [userId],

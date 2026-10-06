@@ -80,6 +80,11 @@ async function init() {
     await client.execute("ALTER TABLE words ADD COLUMN output_lang TEXT NOT NULL DEFAULT 'EN'");
   }
 
+  // Indexes so per-user lookups stay fast as accounts and words grow.
+  await client.execute('CREATE INDEX IF NOT EXISTS idx_words_user_created ON words(user_id, created_at)');
+  await client.execute('CREATE INDEX IF NOT EXISTS idx_words_user_date ON words(user_id, date)');
+  await client.execute('CREATE INDEX IF NOT EXISTS idx_users_email_lower ON users(lower(email))');
+
   await client.execute(`
     CREATE TABLE IF NOT EXISTS word_stats (
       user_id TEXT NOT NULL,

@@ -16,8 +16,9 @@ function rowToUser(row) {
 }
 
 export async function getUserByEmail(email) {
+  // Case-insensitive, so "Dani@x.com" and "dani@x.com" are the same account.
   const result = await client.execute({
-    sql: 'SELECT * FROM users WHERE email = ?',
+    sql: 'SELECT * FROM users WHERE lower(email) = lower(?)',
     args: [email],
   });
   return result.rows[0] ? rowToUser(result.rows[0]) : null;

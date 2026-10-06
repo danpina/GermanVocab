@@ -16,3 +16,13 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
+      # Sign in with Apple (see .env.example). The last three are only needed to revoke
+      # Apple tokens when an account is deleted.
+      - key: APPLE_BUNDLE_ID
+        sync: false
+      - key: APPLE_TEAM_ID
+        sync: false
+      - key: APPLE_KEY_ID
+        sync: false
+      - key: APPLE_PRIVATE_KEY
+        sync: false

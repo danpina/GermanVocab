@@ -67,7 +67,14 @@ export async function getGameWords(userId, count = 6) {
   return { words: picked, available, minRequired: MIN_WORDS_REQUIRED };
 }
 
+/// Returns false (and records nothing) if the word isn't one of this user's own.
 export async function recordGameResult(userId, wordId, correct) {
+  const owned = await client.execute({
+    sql: 'SELECT 1 FROM words WHERE id = ? AND user_id = ?',
+    args: [wordId, userId],
+  });
+  if (owned.rows.length === 0) return false;
+
   const now = new Date().toISOString();
   await client.execute({
     sql: `
@@ -80,4 +87,5 @@ export async function recordGameResult(userId, wordId, correct) {
     `,
     args: [userId, wordId, correct ? 1 : 0, correct ? 0 : 1, now],
   });
+  return true;
 }

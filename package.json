@@ -1,7 +1,10 @@
 {
   "name": "german-vocab-helper",
   "version": "1.0.0",
-  "description": "Look up German words/sentences you don't know while reading, translate them, and save them to a vocab list to study later.",
+  "description": "Linguanest: look up, translate, hear, save and practice vocabulary in any language.",
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "main": "server.js",
   "scripts": {
