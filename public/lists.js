@@ -57,7 +57,7 @@ function renderLists() {
     const dayExportBtn = document.createElement('button');
     dayExportBtn.className = 'day-export-btn';
     dayExportBtn.textContent = 'Export this day as CSV';
-    dayExportBtn.addEventListener('click', () => downloadCsv(wordsToCsv(words), `german-vocab-${key}.csv`));
+    dayExportBtn.addEventListener('click', () => downloadCsv(wordsToCsv(words), `linguanest-${key}.csv`));
 
     const dayDeleteBtn = document.createElement('button');
     dayDeleteBtn.className = 'day-export-btn';
@@ -77,7 +77,7 @@ function renderLists() {
 }
 
 exportAllBtn.addEventListener('click', () => {
-  downloadCsv(wordsToCsv(allWords), 'german-vocab-all.csv');
+  downloadCsv(wordsToCsv(allWords), 'linguanest-all.csv');
 });
 
 function parseBulkLines(text) {
@@ -123,7 +123,7 @@ bulkAddBtn.addEventListener('click', async () => {
     const res = await authedFetch('/api/words/bulk', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ words }),
+      body: JSON.stringify({ words, date: todayKey() }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Could not add words');

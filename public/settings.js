@@ -31,6 +31,12 @@ settingsForm.addEventListener('submit', async (event) => {
   errorEl.classList.add('hidden');
   savedEl.classList.add('hidden');
 
+  if (inputLangSelect.value === outputLangSelect.value) {
+    errorEl.textContent = "Pick two different languages: the one you're learning and the one to translate into.";
+    errorEl.classList.remove('hidden');
+    return;
+  }
+
   saveBtn.disabled = true;
   try {
     const res = await authedFetch('/api/me', {

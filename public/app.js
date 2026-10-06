@@ -152,7 +152,7 @@ saveBtn.addEventListener('click', async () => {
     const res = await authedFetch('/api/words', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ original, translation: currentTranslation }),
+      body: JSON.stringify({ original, translation: currentTranslation, date: todayKey() }),
     });
     if (!res.ok) throw new Error('Could not save entry');
 
@@ -181,7 +181,7 @@ async function loadWords() {
 
 exportBtn.addEventListener('click', async () => {
   const words = await loadWords();
-  downloadCsv(wordsToCsv(words), `german-vocab-${todayKey()}.csv`);
+  downloadCsv(wordsToCsv(words), `linguanest-${todayKey()}.csv`);
 });
 
 async function init() {

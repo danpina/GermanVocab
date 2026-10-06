@@ -78,8 +78,16 @@ function pickDistractors(pool, correctText, count) {
 
 startBtn.addEventListener('click', async () => {
   notEnoughWords.classList.add('hidden');
-  const res = await authedFetch('/api/game/words');
-  const data = await res.json();
+  let data;
+  try {
+    const res = await authedFetch('/api/game/words');
+    data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Could not load your words');
+  } catch (err) {
+    notEnoughWords.textContent = err.message;
+    notEnoughWords.classList.remove('hidden');
+    return;
+  }
 
   if (data.words.length < data.minRequired) {
     notEnoughWords.textContent = `Save at least ${data.minRequired} words before playing (you have ${data.available}).`;
@@ -200,11 +208,17 @@ async function handleAnswer(correct, correctText, clickedBtn) {
   }
 
   nextBtn.classList.remove('hidden');
-  await authedFetch('/api/game/result', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ wordId: round.word.id, correct }),
-  });
+  try {
+    await authedFetch('/api/game/result', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ wordId: round.word.id, correct }),
+    });
+  } catch (err) {
+    // Offline or the server is waking up: the round still counts for this game, the
+    // lasting stats just miss this one answer. Not worth interrupting the player.
+    console.warn('Could not record result:', err);
+  }
 }
 
 nextBtn.addEventListener('click', () => {
