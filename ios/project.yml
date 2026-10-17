@@ -22,8 +22,8 @@ targets:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        NSMicrophoneUsageDescription: "Linguanest uses the microphone so you can dictate words instead of typing them."
-        NSSpeechRecognitionUsageDescription: "Linguanest turns what you dictate into text to save as a word."
+        NSMicrophoneUsageDescription: "Linguanest uses the microphone only while you tap Dictate on the Today screen, so you can say a word or phrase, for example “Guten Morgen”, instead of typing it. The audio is not recorded or saved."
+        NSSpeechRecognitionUsageDescription: "Linguanest uses speech recognition to turn what you say after tapping Dictate into text. For example, saying “Guten Morgen” fills the text box with that phrase so you can translate and save it. Your speech is processed by Apple and is not stored by Linguanest."
         ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
